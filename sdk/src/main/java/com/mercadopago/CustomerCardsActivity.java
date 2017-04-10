@@ -4,7 +4,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
@@ -21,6 +23,12 @@ import com.mercadopago.core.MerchantServer;
 import com.mercadopago.model.ApiException;
 import com.mercadopago.model.Card;
 import com.mercadopago.model.Customer;
+import com.mercadopago.model.Discount;
+import com.mercadopago.preferences.DecorationPreference;
+import com.mercadopago.presenters.CustomerCardsPresenter;
+import com.mercadopago.presenters.PaymentVaultPresenter;
+import com.mercadopago.providers.PaymentVaultProviderImpl;
+import com.mercadopago.uicontrollers.FontCache;
 import com.mercadopago.uicontrollers.savedcards.SavedCardsListView;
 import com.mercadopago.util.ApiUtil;
 import com.mercadopago.util.ErrorUtil;
@@ -31,23 +39,50 @@ import com.mercadopago.util.MercadoPagoUtil;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class CustomerCardsActivity extends MercadoPagoActivity {
+public class CustomerCardsActivity extends AppCompatActivity {
 
+    // Local vars
+    protected boolean mActivityActive;
+    protected List<Card> mCards;
+    protected ViewGroup mSavedCardsContainer;
+    protected DecorationPreference mDecorationPreference;
 
+    //Controls
+    protected CustomerCardsPresenter mPresenter;
+    protected Integer mSelectionImageDrawableResId;
+    protected String mCustomTitle;
+    protected String mSelectionConfirmPromptText;
+    protected String mCustomFooterMessage;
     protected Toolbar mToolbar;
     protected TextView mTitle;
-    protected ViewGroup mSavedCardsContainer;
 
-    private List<Card> mCards;
-    private String mCustomTitle;
-    private String mSelectionConfirmPromptText;
-    private String mCustomFooterMessage;
-    private Integer mSelectionImageDrawableResId;
-    private String mMerchantBaseUrl;
-    private String mMerchantGetCustomerUri;
-    private String mMerchantAccessToken;
+    protected String mMerchantBaseUrl;
+    protected String mMerchantGetCustomerUri;
+    protected String mMerchantAccessToken;
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        createPresenter();
+        getActivityParameters();
+
+        mPresenter.attachView(this);
+        mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri,
+                mMerchantGetCustomerAdditionalInfo, mGetMerchantDiscountBaseURL, mGetMerchantDiscountURI, mGetDiscountAdditionalInfo));
+
+        //TODO va?
+        mActivityActive = true;
+
+        setContentView();
+        initializeControls();
+        initialize();
+    }
+
+    protected void createPresenter() {
+        mPresenter = new CustomerCardsPresenter();
+    }
+
     protected void getActivityParameters() {
         try {
             Gson gson = new Gson();
@@ -57,21 +92,85 @@ public class CustomerCardsActivity extends MercadoPagoActivity {
         } catch (Exception ex) {
             mCards = null;
         }
-        mCustomTitle = this.getIntent().getStringExtra("title");
-        mSelectionConfirmPromptText = this.getIntent().getStringExtra("selectionConfirmPromptText");
-        mSelectionImageDrawableResId = this.getIntent().getIntExtra("selectionImageResId", 0);
-        mCustomFooterMessage = this.getIntent().getStringExtra("footerText");
+
         mMerchantBaseUrl = this.getIntent().getStringExtra("merchantBaseUrl");
         mMerchantGetCustomerUri = this.getIntent().getStringExtra("merchantGetCustomerUri");
         mMerchantAccessToken = this.getIntent().getStringExtra("merchantAccessToken");
 
-        if (mDecorationPreference != null) {
-            super.decorate(mToolbar);
-            super.decorateFont(mTitle);
+        mPresenter.setCustomTitle(this.getIntent().getStringExtra("title"));
+        mPresenter.selectionConfirmPromptText(this.getIntent().getStringExtra("selectionConfirmPromptText"));
+        mPresenter.setSelectionImageDrawableResId(this.getIntent().getIntExtra("selectionImageResId", 0));
+        mPresenter.setCustomFooterMessage(this.getIntent().getStringExtra("footerText"));
+    }
+
+    protected void setContentView() {
+        setContentView(R.layout.mpsdk_activity_customer_cards);
+    }
+
+    protected void initializeControls() {
+        initializeToolbar();
+        mSavedCardsContainer = (ViewGroup) findViewById(R.id.mpsdkRegularLayout);
+    }
+
+    private void initializeToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.mpsdkToolbar);
+        setSupportActionBar(toolbar);
+
+        mTitle = (TextView) findViewById(R.id.mpsdkToolbarTitle);
+        if (!TextUtils.isEmpty(mCustomTitle)) {
+            mTitle.setText(mCustomTitle);
+        }
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
+        if (isCustomColorSet()) {
+            decorate(toolbar);
         }
     }
 
-    @Override
+    private boolean isCustomColorSet() {
+        return mDecorationPreference != null && mDecorationPreference.hasColors();
+    }
+
+    private void decorate(Toolbar toolbar) {
+        if (toolbar != null) {
+            if (mDecorationPreference.hasColors()) {
+                toolbar.setBackgroundColor(mDecorationPreference.getBaseColor());
+            }
+            decorateUpArrow(toolbar);
+        }
+    }
+
+    protected void decorateUpArrow(Toolbar toolbar) {
+        if (mDecorationPreference.isDarkFontEnabled()) {
+            mTitle.setTextColor(mDecorationPreference.getDarkFontColor(this));
+
+            int darkFont = mDecorationPreference.getDarkFontColor(this);
+            Drawable upArrow = toolbar.getNavigationIcon();
+            if (upArrow != null && getSupportActionBar() != null) {
+                upArrow.setColorFilter(darkFont, PorterDuff.Mode.SRC_ATOP);
+                getSupportActionBar().setHomeAsUpIndicator(upArrow);
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
     protected void validateActivityParameters() throws IllegalStateException {
         if (this.mCards == null && (TextUtils.isEmpty(mMerchantBaseUrl)
                 || TextUtils.isEmpty(mMerchantGetCustomerUri)
@@ -80,18 +179,6 @@ public class CustomerCardsActivity extends MercadoPagoActivity {
         }
     }
 
-    @Override
-    protected void setContentView() {
-        setContentView(R.layout.mpsdk_activity_customer_cards);
-    }
-
-    @Override
-    protected void initializeControls() {
-        initializeToolbar();
-        mSavedCardsContainer = (ViewGroup) findViewById(R.id.mpsdkRegularLayout);
-    }
-
-    @Override
     protected void onValidStart() {
         if(mCards == null) {
             getCustomerAsync();
@@ -125,37 +212,8 @@ public class CustomerCardsActivity extends MercadoPagoActivity {
         });
     }
 
-    @Override
     protected void onInvalidStart(String message) {
         ErrorUtil.startErrorActivity(this, message, false);
-    }
-
-    private void initializeToolbar() {
-        mToolbar = (Toolbar) findViewById(R.id.mpsdkToolbar);
-        mTitle = (TextView) findViewById(R.id.mpsdkToolbarTitle);
-        if (!TextUtils.isEmpty(mCustomTitle)) {
-            mTitle.setText(mCustomTitle);
-        }
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-
-        if (isCustomColorSet()) {
-            mToolbar.setBackgroundColor(getCustomBaseColor());
-        }
-        if (isDarkFontEnabled()) {
-            mTitle.setTextColor(getDarkFontColor());
-            Drawable upArrow = mToolbar.getNavigationIcon();
-            upArrow.setColorFilter(getDarkFontColor(), PorterDuff.Mode.SRC_ATOP);
-            getSupportActionBar().setHomeAsUpIndicator(upArrow);
-        }
     }
 
     private void fillData() {
