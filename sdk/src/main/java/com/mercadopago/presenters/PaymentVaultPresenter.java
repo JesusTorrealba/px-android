@@ -56,7 +56,6 @@ public class PaymentVaultPresenter extends MvpPresenter<PaymentVaultView, Paymen
         }
     }
 
-
     private void onValidStart() {
         if (mDiscountEnabled) {
             initPaymentVaultDiscountFlow();
@@ -186,8 +185,8 @@ public class PaymentVaultPresenter extends MvpPresenter<PaymentVaultView, Paymen
     }
 
     private void getPaymentMethodSearchAsync() {
-
         getView().showProgress();
+
         Payer payer = new Payer();
         payer.setAccessToken(mPayerAccessToken);
 

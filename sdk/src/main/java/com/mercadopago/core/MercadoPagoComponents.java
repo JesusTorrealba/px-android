@@ -58,11 +58,14 @@ import com.mercadopago.uicontrollers.savedcards.SavedCardView;
 import com.mercadopago.uicontrollers.savedcards.SavedCardsListView;
 import com.mercadopago.util.JsonUtil;
 import com.mercadopago.util.MercadoPagoUtil;
+import com.mercadopago.util.TextUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.mercadopago.util.TextUtils.isEmpty;
 
 /**
  * Created by mreverter on 1/17/17.
@@ -427,6 +430,9 @@ public class MercadoPagoComponents {
             private PaymentPreference paymentPreference;
             private Integer selectionImageResId;
             private String selectionConfirmPromptText;
+            private String privateKey;
+            private String merchantBaseUrl;
+            private String merchantGetCustomerUri;
 
             public SavedCardsActivityBuilder setActivity(Activity activity) {
                 this.activity = activity;
@@ -468,10 +474,30 @@ public class MercadoPagoComponents {
                 return this;
             }
 
+            public SavedCardsActivityBuilder setMerchantBaseUrl(String merchantBaseUrl) {
+                this.merchantBaseUrl = merchantBaseUrl;
+                return this;
+            }
+
+            public SavedCardsActivityBuilder setMerchantGetCustomerUri(String merchantGetCustomerUri) {
+                this.merchantGetCustomerUri = merchantGetCustomerUri;
+                return this;
+            }
+
+            public SavedCardsActivityBuilder setPrivateKey(String privateKey) {
+                this.privateKey = privateKey;
+                return this;
+            }
+
             public void startActivity() {
 
                 if (this.activity == null) throw new IllegalStateException("activity is null");
-                if (this.cards == null) throw new IllegalStateException("cards is null");
+                if (this.cards == null && (isEmpty(merchantBaseUrl)
+                        || isEmpty(merchantGetCustomerUri)
+                        || isEmpty(privateKey))) {
+                    throw new IllegalStateException("cards or merchant server info required");
+                }
+
                 startCustomerCardsActivity();
             }
 
@@ -485,6 +511,9 @@ public class MercadoPagoComponents {
                 customerCardsIntent.putExtra("footerText", footerText);
                 customerCardsIntent.putExtra("decorationPreference", JsonUtil.getInstance().toJson(decorationPreference));
                 customerCardsIntent.putExtra("paymentPreference", JsonUtil.getInstance().toJson(paymentPreference));
+                customerCardsIntent.putExtra("merchantBaseUrl", merchantBaseUrl);
+                customerCardsIntent.putExtra("merchantGetCustomerUri", merchantGetCustomerUri);
+                customerCardsIntent.putExtra("privateKey", privateKey);
                 activity.startActivityForResult(customerCardsIntent, CUSTOMER_CARDS_REQUEST_CODE);
             }
         }

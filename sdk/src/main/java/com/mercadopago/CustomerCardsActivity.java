@@ -18,8 +18,10 @@ import com.google.gson.reflect.TypeToken;
 import com.mercadopago.callbacks.Callback;
 import com.mercadopago.callbacks.FailureRecovery;
 import com.mercadopago.callbacks.OnSelectedCallback;
+import com.mercadopago.core.MercadoPagoComponents;
 import com.mercadopago.core.MercadoPagoUI;
 import com.mercadopago.core.MerchantServer;
+import com.mercadopago.exceptions.MercadoPagoError;
 import com.mercadopago.model.ApiException;
 import com.mercadopago.model.Card;
 import com.mercadopago.model.Customer;
@@ -44,6 +46,9 @@ import java.util.List;
 public class CustomerCardsActivity extends MercadoPagoBaseActivity implements CustomerCardsView {
 
     // Local vars
+    protected String mMerchantBaseUrl;
+    protected String mMerchantGetCustomerUri;
+
     protected String mPublicKey;
     protected String mPrivateKey;
     protected boolean mActivityActive;
@@ -53,16 +58,8 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     //Controls
     protected CustomerCardsPresenter mPresenter;
-    protected Integer mSelectionImageDrawableResId;
     protected String mCustomTitle;
-    protected String mSelectionConfirmPromptText;
-    protected String mCustomFooterMessage;
-    protected Toolbar mToolbar;
     protected TextView mTitle;
-
-    protected String mMerchantBaseUrl;
-    protected String mMerchantGetCustomerUri;
-    protected String mMerchantAccessToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,10 +69,9 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         getActivityParameters();
 
         mPresenter.attachView(this);
-        mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri,
-                mMerchantGetCustomerAdditionalInfo));
+        mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri));
 
-        //TODO va?
+        //TODO, va?
         mActivityActive = true;
 
         setContentView();
@@ -83,28 +79,35 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         initialize();
     }
 
+    protected void initialize() {
+        mPresenter.initialize();
+    }
+
     protected void createPresenter() {
         mPresenter = new CustomerCardsPresenter();
     }
 
     protected void getActivityParameters() {
+        List<Card> cards;
+
         try {
             Gson gson = new Gson();
             Type listType = new TypeToken<List<Card>>() {
             }.getType();
-            mCards = gson.fromJson(this.getIntent().getStringExtra("cards"), listType);
+            cards = gson.fromJson(this.getIntent().getStringExtra("cards"), listType);
         } catch (Exception ex) {
-            mCards = null;
+            cards = null;
         }
 
         mMerchantBaseUrl = this.getIntent().getStringExtra("merchantBaseUrl");
         mMerchantGetCustomerUri = this.getIntent().getStringExtra("merchantGetCustomerUri");
-        mMerchantAccessToken = this.getIntent().getStringExtra("merchantAccessToken");
+        mPrivateKey = this.getIntent().getStringExtra("privateKey");
 
         mPresenter.setCustomTitle(this.getIntent().getStringExtra("title"));
         mPresenter.setSelectionConfirmPromptText(this.getIntent().getStringExtra("selectionConfirmPromptText"));
         mPresenter.setSelectionImageDrawableResId(this.getIntent().getIntExtra("selectionImageResId", 0));
         mPresenter.setCustomFooterMessage(this.getIntent().getStringExtra("footerText"));
+        mPresenter.setCards(cards);
     }
 
     protected void setContentView() {
@@ -167,126 +170,11 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         }
     }
 
-
-
-
-
-
-
-
-
-    protected void validateActivityParameters() throws IllegalStateException {
-        if (this.mCards == null && (TextUtils.isEmpty(mMerchantBaseUrl)
-                || TextUtils.isEmpty(mMerchantGetCustomerUri)
-                || TextUtils.isEmpty(mMerchantAccessToken))) {
-            throw new IllegalStateException("cards or merchant server info required");
-        }
-    }
-
-    protected void onValidStart() {
-        if(mCards == null) {
-            getCustomerAsync();
-        } else {
-            fillData();
-        }
-
-    }
-
-    private void getCustomerAsync() {
-        showProgress();
-        MerchantServer.getCustomer(this, mMerchantBaseUrl, mMerchantGetCustomerUri, mMerchantAccessToken, new Callback<Customer>() {
-            @Override
-            public void success(Customer customer) {
-                mCards = customer.getCards();
-                hideProgress();
-                fillData();
-            }
-
-            @Override
-            public void failure(ApiException apiException) {
-                ApiUtil.showApiExceptionError(getActivity(), apiException);
-                hideProgress();
-                setFailureRecovery(new FailureRecovery() {
-                    @Override
-                    public void recover() {
-                        getCustomerAsync();
-                    }
-                });
-            }
-        });
-    }
-
-    protected void onInvalidStart(String message) {
-        ErrorUtil.startErrorActivity(this, message, false);
-    }
-
-    private void fillData() {
-        SavedCardsListView savedCardsView = new MercadoPagoUI.Views.SavedCardsListViewBuilder()
-                .setContext(this)
-                .setCards(mCards)
-                .setFooter(mCustomFooterMessage)
-                .setOnSelectedCallback(getOnSelectedCallback())
-                .setSelectionImage(mSelectionImageDrawableResId)
-                .build();
-
-        savedCardsView.drawInParent(mSavedCardsContainer);
-    }
-
-    private OnSelectedCallback<Card> getOnSelectedCallback() {
-        return new OnSelectedCallback<Card>() {
-            @Override
-            public void onSelected(Card card) {
-                if (card != null) {
-                    resolveCardResponse(card);
-                }
-            }
-        };
-    }
-
-    private void resolveCardResponse(final Card card) {
-
-        if (isConfirmPromptEnabled()) {
-
-            String dialogTitle = new StringBuilder().append(getString(R.string.mpsdk_last_digits_label)).append(" ").append(card.getLastFourDigits()).toString();
-
-            int resourceId = MercadoPagoUtil.getPaymentMethodIcon(this, card.getPaymentMethod().getId());
-            if (resourceId == 0) {
-                resourceId = android.R.drawable.ic_dialog_alert;
-            }
-
-            new AlertDialog.Builder(this)
-                    .setIcon(resourceId)
-                    .setTitle(dialogTitle)
-                    .setMessage(mSelectionConfirmPromptText)
-                    .setPositiveButton(getString(R.string.mpsdk_confirm_prompt_yes), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finishWithCardResult(card);
-                        }
-
-                    })
-                    .setNegativeButton(getString(R.string.mpsdk_confirm_prompt_no), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-
-                    })
-                    .show();
-        } else {
-            finishWithCardResult(card);
-        }
-    }
-
-    private boolean isConfirmPromptEnabled() {
-        return !TextUtils.isEmpty(mSelectionConfirmPromptText);
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ErrorUtil.ERROR_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                recoverFromFailure();
+                mPresenter.recoverFromFailure();
             } else {
                 setResult(RESULT_CANCELED, data);
                 finish();
@@ -294,16 +182,42 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         }
     }
 
-    private void finishWithCardResult(Card card) {
+    @Override
+    public void fillData() {
+        SavedCardsListView savedCardsView = new MercadoPagoComponents.Views.SavedCardsListViewBuilder()
+                .setContext(this)
+                .setCards(mPresenter.getCards())
+                .setFooter(mPresenter.getCustomFooterMessage())
+                .setOnSelectedCallback(getOnSelectedCallback())
+                .build();
+
+        savedCardsView.drawInParent(mSavedCardsContainer);
+    }
+
+    @Override
+    public void hideProgress() {
+        LayoutUtil.showRegularLayout(this);
+    }
+
+    @Override
+    public void showProgress() {
+        LayoutUtil.showProgressLayout(this);
+    }
+
+    @Override
+    public void showError(MercadoPagoError error) {
+        if (error.isApiException()) {
+            showApiException(error.getApiException());
+        } else {
+            ErrorUtil.startErrorActivity(this, error);
+        }
+    }
+
+    @Override
+    public void finishWithCardResult(Card card) {
         Intent returnIntent = new Intent();
         setResult(RESULT_OK, returnIntent);
         returnIntent.putExtra("card", JsonUtil.getInstance().toJson(card));
-        finish();
-    }
-
-    public void onOtherPaymentMethodClicked(View view) {
-        Intent returnIntent = new Intent();
-        setResult(RESULT_OK, returnIntent);
         finish();
     }
 
@@ -314,11 +228,26 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         finish();
     }
 
-    public void hideProgress() {
-        LayoutUtil.showRegularLayout(this);
+    public void showApiException(ApiException apiException) {
+        if (mActivityActive) {
+            ApiUtil.showApiExceptionError(this, apiException);
+        }
     }
 
-    public void showProgress() {
-        LayoutUtil.showProgressLayout(this);
+    private OnSelectedCallback<Card> getOnSelectedCallback() {
+        return new OnSelectedCallback<Card>() {
+            @Override
+            public void onSelected(Card card) {
+                if (card != null) {
+                    mPresenter.resolveCardResponse(card);
+                }
+            }
+        };
+    }
+
+    public void onOtherPaymentMethodClicked(View view) {
+        Intent returnIntent = new Intent();
+        setResult(RESULT_OK, returnIntent);
+        finish();
     }
 }
