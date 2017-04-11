@@ -27,6 +27,7 @@ import com.mercadopago.model.Discount;
 import com.mercadopago.preferences.DecorationPreference;
 import com.mercadopago.presenters.CustomerCardsPresenter;
 import com.mercadopago.presenters.PaymentVaultPresenter;
+import com.mercadopago.providers.CustomerCardsProviderImpl;
 import com.mercadopago.providers.PaymentVaultProviderImpl;
 import com.mercadopago.uicontrollers.FontCache;
 import com.mercadopago.uicontrollers.savedcards.SavedCardsListView;
@@ -35,13 +36,16 @@ import com.mercadopago.util.ErrorUtil;
 import com.mercadopago.util.JsonUtil;
 import com.mercadopago.util.LayoutUtil;
 import com.mercadopago.util.MercadoPagoUtil;
+import com.mercadopago.views.CustomerCardsView;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class CustomerCardsActivity extends AppCompatActivity {
+public class CustomerCardsActivity extends MercadoPagoBaseActivity implements CustomerCardsView {
 
     // Local vars
+    protected String mPublicKey;
+    protected String mPrivateKey;
     protected boolean mActivityActive;
     protected List<Card> mCards;
     protected ViewGroup mSavedCardsContainer;
@@ -69,7 +73,7 @@ public class CustomerCardsActivity extends AppCompatActivity {
 
         mPresenter.attachView(this);
         mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri,
-                mMerchantGetCustomerAdditionalInfo, mGetMerchantDiscountBaseURL, mGetMerchantDiscountURI, mGetDiscountAdditionalInfo));
+                mMerchantGetCustomerAdditionalInfo));
 
         //TODO va?
         mActivityActive = true;
@@ -98,7 +102,7 @@ public class CustomerCardsActivity extends AppCompatActivity {
         mMerchantAccessToken = this.getIntent().getStringExtra("merchantAccessToken");
 
         mPresenter.setCustomTitle(this.getIntent().getStringExtra("title"));
-        mPresenter.selectionConfirmPromptText(this.getIntent().getStringExtra("selectionConfirmPromptText"));
+        mPresenter.setSelectionConfirmPromptText(this.getIntent().getStringExtra("selectionConfirmPromptText"));
         mPresenter.setSelectionImageDrawableResId(this.getIntent().getIntExtra("selectionImageResId", 0));
         mPresenter.setCustomFooterMessage(this.getIntent().getStringExtra("footerText"));
     }
