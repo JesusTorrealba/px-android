@@ -52,7 +52,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
     protected String mPublicKey;
     protected String mPrivateKey;
     protected boolean mActivityActive;
-    protected List<Card> mCards;
     protected ViewGroup mSavedCardsContainer;
     protected DecorationPreference mDecorationPreference;
 
