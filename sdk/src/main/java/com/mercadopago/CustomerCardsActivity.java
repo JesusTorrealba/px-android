@@ -71,7 +71,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         mPresenter.attachView(this);
         mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri));
 
-        //TODO, va?
         mActivityActive = true;
 
         setContentView();
@@ -195,6 +194,32 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
     }
 
     @Override
+    public void showAlertDialog(final Card card) {
+        String lastDigitsLabel = mPresenter.getResourcesProvider().getLastDigitsLabel();
+        String dialogTitle = new StringBuilder().append(lastDigitsLabel).append(" ").append(card.getLastFourDigits()).toString();
+
+        new AlertDialog.Builder(this)
+                .setIcon(mPresenter.getResourceId(this, card))
+                .setTitle(dialogTitle)
+                .setMessage(mPresenter.getSelectionConfirmPromptText())
+                .setPositiveButton(mPresenter.getResourcesProvider().getConfirmPromptYes(), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finishWithCardResult(card);
+                    }
+
+                })
+                .setNegativeButton(mPresenter.getResourcesProvider().getConfirmPromptNo(), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+
+                })
+                .show();
+    }
+
+    @Override
     public void hideProgress() {
         LayoutUtil.showRegularLayout(this);
     }
@@ -250,4 +275,5 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         setResult(RESULT_OK, returnIntent);
         finish();
     }
+
 }

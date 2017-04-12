@@ -53,4 +53,19 @@ public class CustomerCardsProviderImpl implements CustomerCardsProvider {
     public String getLastDigitsLabel() {
         return context.getString(R.string.mpsdk_last_digits_label);
     }
+
+    @Override
+    public String getConfirmPromptYes() {
+        return context.getString(R.string.mpsdk_confirm_prompt_yes);
+    }
+
+    @Override
+    public String getConfirmPromptNo() {
+        return context.getString(R.string.mpsdk_confirm_prompt_no);
+    }
+
+    @Override
+    public int getIconDialogAlert() {
+        return android.R.drawable.ic_dialog_alert;
+    }
 }

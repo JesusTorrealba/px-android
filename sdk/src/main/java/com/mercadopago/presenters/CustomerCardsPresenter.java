@@ -1,5 +1,6 @@
 package com.mercadopago.presenters;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.mercadopago.callbacks.FailureRecovery;
@@ -9,6 +10,7 @@ import com.mercadopago.model.Customer;
 import com.mercadopago.mvp.MvpPresenter;
 import com.mercadopago.mvp.OnResourcesRetrievedCallback;
 import com.mercadopago.providers.CustomerCardsProvider;
+import com.mercadopago.util.MercadoPagoUtil;
 import com.mercadopago.views.CustomerCardsView;
 
 import java.util.List;
@@ -25,6 +27,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
     private String mCustomFooterMessage;
     private FailureRecovery mFailureRecovery;
 
+    private Card mCard;
     private List<Card> mCards;
 
     public void initialize() {
@@ -62,40 +65,8 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
     }
 
     public void resolveCardResponse(final Card card) {
-        String lastDigitsLabel = getResourcesProvider().getLastDigitsLabel();
-
         if (isConfirmPromptEnabled()) {
-            String dialogTitle = new StringBuilder().append(lastDigitsLabel).append(" ").append(card.getLastFourDigits()).toString();
-
-            
-
-
-
-
-            int resourceId = MercadoPagoUtil.getPaymentMethodIcon(this, card.getPaymentMethod().getId());
-            if (resourceId == 0) {
-                resourceId = android.R.drawable.ic_dialog_alert;
-            }
-
-            new AlertDialog.Builder(this)
-                    .setIcon(resourceId)
-                    .setTitle(dialogTitle)
-                    .setMessage(mSelectionConfirmPromptText)
-                    .setPositiveButton(getString(R.string.mpsdk_confirm_prompt_yes), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            getView().finishWithCardResult(card);
-                        }
-
-                    })
-                    .setNegativeButton(getString(R.string.mpsdk_confirm_prompt_no), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-
-                    })
-                    .show();
+            getView().showAlertDialog(card);
         } else {
             getView().finishWithCardResult(card);
         }
@@ -155,5 +126,15 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
 
     public FailureRecovery getFailureRecovery() {
         return this.mFailureRecovery;
+    }
+
+    public int getResourceId(Context context, Card card) {
+        int resourceId = MercadoPagoUtil.getPaymentMethodIcon(context, card.getPaymentMethod().getId());
+
+        if (resourceId == 0) {
+            resourceId = getResourcesProvider().getIconDialogAlert();
+        }
+
+        return resourceId;
     }
 }

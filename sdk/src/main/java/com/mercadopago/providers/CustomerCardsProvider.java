@@ -14,4 +14,9 @@ public interface CustomerCardsProvider extends ResourcesProvider {
 
     String getLastDigitsLabel();
 
+    String getConfirmPromptYes();
+
+    String getConfirmPromptNo();
+
+    int getIconDialogAlert();
 }
