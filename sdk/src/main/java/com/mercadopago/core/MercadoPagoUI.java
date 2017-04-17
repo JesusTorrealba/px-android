@@ -73,7 +73,6 @@ public class MercadoPagoUI {
             private String merchantBaseUrl;
             private String merchantGetCustomerUri;
             private String merchantAccessToken;
-            private String publicKey;
 
             public SavedCardsActivityBuilder setActivity(Activity activity) {
                 this.activity = activity;
@@ -122,11 +121,6 @@ public class MercadoPagoUI {
 
             public SavedCardsActivityBuilder setMerchantAccessToken(String merchantAccessToken) {
                 this.merchantAccessToken = merchantAccessToken;
-                return this;
-            }
-
-            public SavedCardsActivityBuilder setPublicKey(String publicKey) {
-                this.publicKey = publicKey;
                 return this;
             }
 

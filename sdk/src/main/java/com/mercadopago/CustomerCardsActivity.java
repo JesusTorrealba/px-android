@@ -38,7 +38,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
     protected String mMerchantBaseUrl;
     protected String mMerchantGetCustomerUri;
 
-    protected String mPublicKey;
     protected String mMerchantAccessToken;
     protected boolean mActivityActive;
     protected ViewGroup mSavedCardsContainer;
@@ -56,7 +55,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         getActivityParameters();
 
         mPresenter.attachView(this);
-        mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mMerchantAccessToken, mMerchantBaseUrl, mMerchantGetCustomerUri));
+        mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mMerchantAccessToken, mMerchantBaseUrl, mMerchantGetCustomerUri));
 
         mActivityActive = true;
 
