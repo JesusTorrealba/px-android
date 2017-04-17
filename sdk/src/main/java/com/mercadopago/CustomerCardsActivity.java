@@ -46,7 +46,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     //Controls
     protected CustomerCardsPresenter mPresenter;
-    protected String mCustomTitle;
     protected TextView mTitle;
 
     @Override
@@ -111,8 +110,8 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         setSupportActionBar(toolbar);
 
         mTitle = (TextView) findViewById(R.id.mpsdkToolbarTitle);
-        if (!TextUtils.isEmpty(mCustomTitle)) {
-            mTitle.setText(mCustomTitle);
+        if (!TextUtils.isEmpty(mPresenter.getCustomTitle())) {
+            mTitle.setText(mPresenter.getCustomTitle());
         }
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -176,6 +175,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
                 .setCards(mPresenter.getCards())
                 .setCustomActionMessage(mPresenter.getCustomActionMessage())
                 .setOnSelectedCallback(getOnSelectedCallback())
+                .setSelectionImage(mPresenter.getSelectionImageDrawableResId())
                 .build();
 
         savedCardsView.drawInParent(mSavedCardsContainer);

@@ -27,7 +27,6 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
     private String mCustomActionMessage;
     private FailureRecovery mFailureRecovery;
 
-    private Card mCard;
     private List<Card> mCards;
 
     public void initialize() {
