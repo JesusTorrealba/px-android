@@ -24,7 +24,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
     private Integer mSelectionImageDrawableResId;
     private String mCustomTitle;
     private String mSelectionConfirmPromptText;
-    private String mCustomFooterMessage;
+    private String mCustomActionMessage;
     private FailureRecovery mFailureRecovery;
 
     private Card mCard;
@@ -112,12 +112,12 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         this.mSelectionConfirmPromptText = selectionConfirmPromptText;
     }
 
-    public String getCustomFooterMessage() {
-        return mCustomFooterMessage;
+    public String getCustomActionMessage() {
+        return mCustomActionMessage;
     }
 
-    public void setCustomFooterMessage(String customFooterMessage) {
-        this.mCustomFooterMessage = customFooterMessage;
+    public void setCustomActionMessage(String customActionMessage) {
+        this.mCustomActionMessage = customActionMessage;
     }
 
     public void setFailureRecovery(FailureRecovery failureRecovery) {

@@ -6,7 +6,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
@@ -15,29 +14,19 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mercadopago.callbacks.Callback;
-import com.mercadopago.callbacks.FailureRecovery;
 import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.core.MercadoPagoComponents;
-import com.mercadopago.core.MercadoPagoUI;
-import com.mercadopago.core.MerchantServer;
 import com.mercadopago.exceptions.MercadoPagoError;
 import com.mercadopago.model.ApiException;
 import com.mercadopago.model.Card;
-import com.mercadopago.model.Customer;
-import com.mercadopago.model.Discount;
 import com.mercadopago.preferences.DecorationPreference;
 import com.mercadopago.presenters.CustomerCardsPresenter;
-import com.mercadopago.presenters.PaymentVaultPresenter;
 import com.mercadopago.providers.CustomerCardsProviderImpl;
-import com.mercadopago.providers.PaymentVaultProviderImpl;
-import com.mercadopago.uicontrollers.FontCache;
 import com.mercadopago.uicontrollers.savedcards.SavedCardsListView;
 import com.mercadopago.util.ApiUtil;
 import com.mercadopago.util.ErrorUtil;
 import com.mercadopago.util.JsonUtil;
 import com.mercadopago.util.LayoutUtil;
-import com.mercadopago.util.MercadoPagoUtil;
 import com.mercadopago.views.CustomerCardsView;
 
 import java.lang.reflect.Type;
@@ -104,7 +93,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         mPresenter.setCustomTitle(this.getIntent().getStringExtra("title"));
         mPresenter.setSelectionConfirmPromptText(this.getIntent().getStringExtra("selectionConfirmPromptText"));
         mPresenter.setSelectionImageDrawableResId(this.getIntent().getIntExtra("selectionImageResId", 0));
-        mPresenter.setCustomFooterMessage(this.getIntent().getStringExtra("footerText"));
+        mPresenter.setCustomActionMessage(this.getIntent().getStringExtra("customActionMessage"));
         mPresenter.setCards(cards);
     }
 
@@ -185,7 +174,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         SavedCardsListView savedCardsView = new MercadoPagoComponents.Views.SavedCardsListViewBuilder()
                 .setContext(this)
                 .setCards(mPresenter.getCards())
-                .setFooter(mPresenter.getCustomFooterMessage())
+                .setCustomActionMessage(mPresenter.getCustomActionMessage())
                 .setOnSelectedCallback(getOnSelectedCallback())
                 .build();
 

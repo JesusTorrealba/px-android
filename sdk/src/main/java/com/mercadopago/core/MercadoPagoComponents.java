@@ -1815,7 +1815,7 @@ public class MercadoPagoComponents {
                 return this;
             }
 
-            public SavedCardsListViewBuilder setFooter(String footerText) {
+            public SavedCardsListViewBuilder setCustomActionMessage(String footerText) {
                 this.footerText = footerText;
                 return this;
             }
