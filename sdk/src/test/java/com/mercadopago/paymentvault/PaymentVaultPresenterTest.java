@@ -792,11 +792,18 @@ public class PaymentVaultPresenterTest {
         }
 
         @Override
-        public void startCardFlow(String paymentType, BigDecimal transactionAmount) {
+        public void startCardFlow(String paymentType, BigDecimal transactionAmount, Boolean automaticallySelection) {
             cardFlowStarted = true;
             amountSentToCardFlow = transactionAmount;
             selectedPaymentType = paymentType;
         }
+
+//        @Override
+//        public void startCardFlow(String paymentType, BigDecimal transactionAmount) {
+//            cardFlowStarted = true;
+//            amountSentToCardFlow = transactionAmount;
+//            selectedPaymentType = paymentType;
+//        }
 
         @Override
         public void startPaymentMethodsActivity() {

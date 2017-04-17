@@ -425,7 +425,7 @@ public class MercadoPagoComponents {
             private Activity activity;
             private List<Card> cards;
             private String title;
-            private String footerText;
+            private String customActionMessage;
             private DecorationPreference decorationPreference;
             private PaymentPreference paymentPreference;
             private Integer selectionImageResId;
@@ -469,8 +469,8 @@ public class MercadoPagoComponents {
                 return this;
             }
 
-            public SavedCardsActivityBuilder setFooter(String footerText) {
-                this.footerText = footerText;
+            public SavedCardsActivityBuilder setCustomActionMessage(String customActionMessage) {
+                this.customActionMessage = customActionMessage;
                 return this;
             }
 
@@ -508,7 +508,7 @@ public class MercadoPagoComponents {
                 customerCardsIntent.putExtra("title", title);
                 customerCardsIntent.putExtra("selectionConfirmPromptText", selectionConfirmPromptText);
                 customerCardsIntent.putExtra("selectionImageResId", selectionImageResId);
-                customerCardsIntent.putExtra("footerText", footerText);
+                customerCardsIntent.putExtra("customActionMessage", customActionMessage);
                 customerCardsIntent.putExtra("decorationPreference", JsonUtil.getInstance().toJson(decorationPreference));
                 customerCardsIntent.putExtra("paymentPreference", JsonUtil.getInstance().toJson(paymentPreference));
                 customerCardsIntent.putExtra("merchantBaseUrl", merchantBaseUrl);
@@ -1796,7 +1796,7 @@ public class MercadoPagoComponents {
 
             private Context context;
             private List<Card> cards;
-            private String footerText;
+            private String customActionMessage;
             private OnSelectedCallback<Card> onSelectedCallback;
             private int selectionImageResId;
 
@@ -1815,8 +1815,8 @@ public class MercadoPagoComponents {
                 return this;
             }
 
-            public SavedCardsListViewBuilder setCustomActionMessage(String footerText) {
-                this.footerText = footerText;
+            public SavedCardsListViewBuilder setCustomActionMessage(String customActionMessage) {
+                this.customActionMessage = customActionMessage;
                 return this;
             }
 
@@ -1826,7 +1826,7 @@ public class MercadoPagoComponents {
             }
 
             public SavedCardsListView build() {
-                return new SavedCardsListView(context, cards, footerText, selectionImageResId, onSelectedCallback);
+                return new SavedCardsListView(context, cards, customActionMessage, selectionImageResId, onSelectedCallback);
             }
         }
 
