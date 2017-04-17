@@ -18,7 +18,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import com.mercadopago.adapters.PaymentMethodSearchItemAdapter;
-import com.mercadopago.callbacks.FailureRecovery;
 import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.controllers.CheckoutTimer;
 import com.mercadopago.core.MercadoPagoComponents;
@@ -78,7 +77,6 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
 
     // Local vars
     protected DecorationPreference mDecorationPreference;
-    protected FailureRecovery mFailureRecovery;
     protected boolean mActivityActive;
     protected PaymentMethod mSelectedPaymentMethod;
     protected Token mToken;
@@ -359,7 +357,7 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
     }
 
     @Override
-    public void restartWithSelectedItem(PaymentMethodSearchItem item) {
+    public void showSelectedItem(PaymentMethodSearchItem item) {
         Intent intent = new Intent(this, PaymentVaultActivity.class);
         intent.putExtras(this.getIntent());
         intent.putExtra("selectedSearchItem", JsonUtil.getInstance().toJson(item));
@@ -400,9 +398,7 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
     }
 
     private void recoverFromFailure() {
-        if (mFailureRecovery != null) {
-            mFailureRecovery.recover();
-        }
+        mPaymentVaultPresenter.recoverFromFailure();
     }
 
     private void resolvePaymentVaultRequest(int resultCode, Intent data) {
@@ -537,11 +533,6 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
     }
 
     @Override
-    public void setFailureRecovery(FailureRecovery failureRecovery) {
-        this.mFailureRecovery = failureRecovery;
-    }
-
-    @Override
     public void startCardFlow(String paymentType, BigDecimal amount, Boolean automaticSelection) {
         PaymentPreference paymentPreference = mPaymentVaultPresenter.getPaymentPreference();
         paymentPreference.setDefaultPaymentTypeId(paymentType);
@@ -568,7 +559,7 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
     }
 
     @Override
-    public void startPaymentMethodsActivity() {
+    public void startPaymentMethodsSelection() {
         new MercadoPagoComponents.Activities.PaymentMethodsActivityBuilder()
                 .setActivity(this)
                 .setMerchantPublicKey(mPublicKey)
@@ -679,7 +670,7 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
     }
 
     @Override
-    public void startDiscountActivity(BigDecimal transactionAmount) {
+    public void startDiscountFlow(BigDecimal transactionAmount) {
         MercadoPagoComponents.Activities.DiscountsActivityBuilder mercadoPagoBuilder
                 = new MercadoPagoComponents.Activities.DiscountsActivityBuilder();
 
@@ -701,7 +692,7 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
     }
 
     @Override
-    public void showDiscountRow(BigDecimal transactionAmount) {
+    public void showDiscount(BigDecimal transactionAmount) {
         DiscountRowView discountRowView = new MercadoPagoUI.Views.DiscountRowViewBuilder()
                 .setContext(this)
                 .setDiscount(mPaymentVaultPresenter.getDiscount())
@@ -717,7 +708,7 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
             @Override
             public void onClick(View view) {
                 if (mPaymentVaultPresenter.getDiscountEnabled()) {
-                    mPaymentVaultPresenter.initializeDiscountActivity();
+                    mPaymentVaultPresenter.onDiscountOptionSelected();
                 }
             }
         });
