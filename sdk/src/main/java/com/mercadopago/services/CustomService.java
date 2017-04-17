@@ -34,6 +34,7 @@ public interface CustomService {
 
     @GET("/{uri}")
     MPCall<Customer> getCustomer(@Path(value = "uri", encoded = true) String uri,
+                                 @Query(value="merchant_access_token", encoded = true) String merchantAccessToken,
                                  @QueryMap(encoded = true) Map<String, String> additionalInfo);
 
     @GET("/{uri}")

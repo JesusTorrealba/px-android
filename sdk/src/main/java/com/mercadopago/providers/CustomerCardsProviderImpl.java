@@ -19,24 +19,26 @@ public class CustomerCardsProviderImpl implements CustomerCardsProvider {
 
     private final Context context;
     private final MercadoPagoServices mercadoPago;
+    private final String merchantAccessToken;
     private final String merchantBaseUrl;
     private final String merchantGetCustomerUri;
 
-    public CustomerCardsProviderImpl(Context context, String publicKey, String privateKey, String merchantBaseUrl, String merchantGetCustomerUri) {
+    public CustomerCardsProviderImpl(Context context, String publicKey, String merchantAccessToken, String merchantBaseUrl, String merchantGetCustomerUri) {
         this.context = context;
+        this.merchantAccessToken = merchantAccessToken;
         this.merchantBaseUrl = merchantBaseUrl;
         this.merchantGetCustomerUri = merchantGetCustomerUri;
 
         this.mercadoPago = new MercadoPagoServices.Builder()
                 .setContext(context)
                 .setPublicKey(publicKey)
-                .setPrivateKey(privateKey)
+                .setPrivateKey(merchantAccessToken)
                 .build();
     }
 
     @Override
     public void getCustomer(final OnResourcesRetrievedCallback<Customer> onResourcesRetrievedCallback) {
-        CustomServer.getCustomer(context, merchantBaseUrl, merchantGetCustomerUri, new Callback<Customer>() {
+        CustomServer.getCustomer(context, merchantBaseUrl, merchantGetCustomerUri, merchantAccessToken, new Callback<Customer>() {
             @Override
             public void success(Customer customer) {
                 onResourcesRetrievedCallback.onSuccess(customer);

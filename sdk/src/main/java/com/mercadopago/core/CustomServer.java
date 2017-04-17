@@ -35,17 +35,18 @@ public class CustomServer {
         service.createPreference(uri, bodyInfo).enqueue(callback);
     }
 
-    public static void getCustomer(Context context, String url, String uri, Callback<Customer> callback) {
+    public static void getCustomer(Context context, String url, String uri, String merchantAccessToken, Callback<Customer> callback) {
         CustomService service = getService(context, url);
-        service.getCustomer(uri, null).enqueue(callback);
+        service.getCustomer(uri, merchantAccessToken,null).enqueue(callback);
     }
 
-    public static void getCustomer(Context context, String url, String uri, @NonNull Map<String, String> additionalInfo, Callback<Customer> callback) {
+    public static void getCustomer(Context context, String url, String uri, String merchantAccessToken, @NonNull Map<String, String> additionalInfo, Callback<Customer> callback) {
         if (additionalInfo == null) {
             additionalInfo = new HashMap<>();
         }
+
         CustomService service = getService(context, url);
-        service.getCustomer(uri, additionalInfo).enqueue(callback);
+        service.getCustomer(uri, merchantAccessToken, additionalInfo).enqueue(callback);
     }
 
     public static void createPayment(Context context, String transactionId, String baseUrl, String uri,

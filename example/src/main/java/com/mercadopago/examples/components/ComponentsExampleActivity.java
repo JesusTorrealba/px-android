@@ -182,6 +182,8 @@ public class ComponentsExampleActivity extends AppCompatActivity {
                     public void success(Customer customer) {
                         new MercadoPagoUI.Activities.SavedCardsActivityBuilder()
                                 .setActivity(mActivity)
+                                .setPublicKey(mPublicKey)
+                                .setPrivateKey(ExamplesUtils.DUMMY_MERCHANT_ACCESS_TOKEN)
                                 .setPaymentPreference(paymentPreference)
                                 .setDecorationPreference(decorationPreference)
                                 .setCards(customer.getCards())

@@ -65,7 +65,7 @@ public class MercadoPagoUI {
             private Activity activity;
             private List<Card> cards;
             private String title;
-            private String footerText;
+            private String customActionMessage;
             private DecorationPreference decorationPreference;
             private PaymentPreference paymentPreference;
             private Integer selectionImageResId;
@@ -73,6 +73,7 @@ public class MercadoPagoUI {
             private String merchantBaseUrl;
             private String merchantGetCustomerUri;
             private String merchantAccessToken;
+            private String publicKey;
 
             public SavedCardsActivityBuilder setActivity(Activity activity) {
                 this.activity = activity;
@@ -124,8 +125,13 @@ public class MercadoPagoUI {
                 return this;
             }
 
-            public SavedCardsActivityBuilder setFooter(String footerText) {
-                this.footerText = footerText;
+            public SavedCardsActivityBuilder setPublicKey(String publicKey) {
+                this.publicKey = publicKey;
+                return this;
+            }
+
+            public SavedCardsActivityBuilder setCustomActionMessage(String customActionMessage) {
+                this.customActionMessage = customActionMessage;
                 return this;
             }
 
@@ -150,7 +156,7 @@ public class MercadoPagoUI {
                 customerCardsIntent.putExtra("title", title);
                 customerCardsIntent.putExtra("selectionConfirmPromptText", selectionConfirmPromptText);
                 customerCardsIntent.putExtra("selectionImageResId", selectionImageResId);
-                customerCardsIntent.putExtra("footerText", footerText);
+                customerCardsIntent.putExtra("customActionMessage", customActionMessage);
                 customerCardsIntent.putExtra("decorationPreference", JsonUtil.getInstance().toJson(decorationPreference));
                 customerCardsIntent.putExtra("paymentPreference", JsonUtil.getInstance().toJson(paymentPreference));
                 activity.startActivityForResult(customerCardsIntent, CUSTOMER_CARDS_REQUEST_CODE);
@@ -234,10 +240,12 @@ public class MercadoPagoUI {
             public void startActivity() {
 
                 if (this.activity == null) throw new IllegalStateException("activity is null");
-                if (this.paymentMethod == null) throw new IllegalStateException("payment method is null");
+                if (this.paymentMethod == null)
+                    throw new IllegalStateException("payment method is null");
                 if (this.items == null) throw new IllegalStateException("items not set");
                 if (MercadoPagoUtil.isCard(paymentMethod.getPaymentTypeId())) {
-                    if (this.payerCost == null) throw new IllegalStateException("payer cost is null");
+                    if (this.payerCost == null)
+                        throw new IllegalStateException("payer cost is null");
                     if (this.cardInfo == null) throw new IllegalStateException("card info is null");
                 }
                 startReviewAndConfirmActivity();
@@ -435,7 +443,7 @@ public class MercadoPagoUI {
 
             public DiscountRowView build() {
                 return new DiscountRowView(context, discount, transactionAmount, currencyId, shortRowEnabled,
-                                            discountEnabled, showArrow, showSeparator);
+                        discountEnabled, showArrow, showSeparator);
             }
         }
 

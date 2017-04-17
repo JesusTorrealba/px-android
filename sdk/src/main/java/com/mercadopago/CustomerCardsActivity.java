@@ -39,7 +39,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
     protected String mMerchantGetCustomerUri;
 
     protected String mPublicKey;
-    protected String mPrivateKey;
+    protected String mMerchantAccessToken;
     protected boolean mActivityActive;
     protected ViewGroup mSavedCardsContainer;
     protected DecorationPreference mDecorationPreference;
@@ -56,7 +56,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         getActivityParameters();
 
         mPresenter.attachView(this);
-        mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri));
+        mPresenter.attachResourcesProvider(new CustomerCardsProviderImpl(this, mPublicKey, mMerchantAccessToken, mMerchantBaseUrl, mMerchantGetCustomerUri));
 
         mActivityActive = true;
 
@@ -87,7 +87,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
         mMerchantBaseUrl = this.getIntent().getStringExtra("merchantBaseUrl");
         mMerchantGetCustomerUri = this.getIntent().getStringExtra("merchantGetCustomerUri");
-        mPrivateKey = this.getIntent().getStringExtra("privateKey");
+        mMerchantAccessToken = this.getIntent().getStringExtra("merchantAccessToken");
 
         mPresenter.setCustomTitle(this.getIntent().getStringExtra("title"));
         mPresenter.setSelectionConfirmPromptText(this.getIntent().getStringExtra("selectionConfirmPromptText"));
