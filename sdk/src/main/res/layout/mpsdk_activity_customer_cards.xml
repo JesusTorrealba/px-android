@@ -28,10 +28,23 @@
                 android:layout_gravity="center"/>
         </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
-    <LinearLayout
-        android:orientation="vertical"
-        android:id="@+id/mpsdkRegularLayout"
+    <!--<LinearLayout-->
+        <!--android:orientation="vertical"-->
+        <!--android:id="@+id/mpsdkRegularLayout"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:background="@color/mpsdk_color_light_grey"/>-->
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/mpsdkCardsList"
+        android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/mpsdk_color_light_grey"/>
+        android:background="@color/mpsdk_white"
+        android:divider="@null"
+        android:listSelector="@android:color/transparent"
+        android:paddingEnd="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingStart="10dp" />
 </LinearLayout>

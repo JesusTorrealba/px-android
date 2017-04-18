@@ -1,7 +1,6 @@
 package com.mercadopago.presenters;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import com.mercadopago.callbacks.FailureRecovery;
 import com.mercadopago.callbacks.OnSelectedCallback;

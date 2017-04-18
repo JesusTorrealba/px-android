@@ -6,6 +6,8 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
@@ -27,12 +29,17 @@ import com.mercadopago.util.ApiUtil;
 import com.mercadopago.util.ErrorUtil;
 import com.mercadopago.util.JsonUtil;
 import com.mercadopago.util.LayoutUtil;
+import com.mercadopago.util.ScaleUtil;
 import com.mercadopago.views.CustomerCardsView;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
+import static com.mercadopago.PaymentVaultActivity.COLUMN_SPACING_DP_VALUE;
+
 public class CustomerCardsActivity extends MercadoPagoBaseActivity implements CustomerCardsView {
+
+    public static final int COLUMNS = 2;
 
     // Local vars
     protected String mMerchantBaseUrl;
@@ -45,6 +52,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     //Controls
     protected CustomerCardsPresenter mPresenter;
+    protected RecyclerView mCardsRecyclerView;
     protected TextView mTitle;
 
     @Override
@@ -102,7 +110,10 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     protected void initializeControls() {
         initializeToolbar();
+        initializePaymentOptionsRecyclerView();
+
         mSavedCardsContainer = (ViewGroup) findViewById(R.id.mpsdkRegularLayout);
+
     }
 
     private void initializeToolbar() {
@@ -128,6 +139,15 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         if (isCustomColorSet()) {
             decorate(toolbar);
         }
+    }
+
+    protected void initializePaymentOptionsRecyclerView() {
+        int columns = COLUMNS;
+        mCardsRecyclerView = (RecyclerView) findViewById(R.id.mpsdkCardsList);
+        mCardsRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
+        mCardsRecyclerView.addItemDecoration(new GridSpacingItemDecoration(columns, ScaleUtil.getPxFromDp(COLUMN_SPACING_DP_VALUE, this), true));
+        CardsAdapter groupsAdapter = new PaymentMethodSearchItemAdapter();
+        mCardsRecyclerView.setAdapter(groupsAdapter);
     }
 
     private boolean isCustomColorSet() {

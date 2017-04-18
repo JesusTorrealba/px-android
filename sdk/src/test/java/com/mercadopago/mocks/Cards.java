@@ -14,14 +14,16 @@ import java.util.List;
 
 public class Cards {
 
-    private Cards() {}
+    private Cards() {
+    }
 
     public static List<Card> getCardsMLA() {
         List<Card> cards;
         String json = ResourcesUtil.getStringResource("cards_MLA.json");
 
         Gson gson = new Gson();
-        Type listType = new TypeToken<List<Card>>(){}.getType();
+        Type listType = new TypeToken<List<Card>>() {
+        }.getType();
         cards = gson.fromJson(json, listType);
 
         return cards;
