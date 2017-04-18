@@ -40,592 +40,592 @@ import static org.junit.Assert.assertEquals;
 
 public class PaymentVaultPresenterTest {
 
-    @Test
-    public void ifSiteNotSetShowInvalidSiteError() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = com.mercadopago.utils.PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-
-        presenter.initialize(true);
-
-        assertEquals(MockedProvider.INVALID_SITE, mockedView.errorShown.getMessage());
-    }
-
-    @Test
-    public void ifInvalidCurrencySetShowInvalidSiteError() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setSite(new Site("invalid_id", "invalid_currency"));
-        presenter.setAmount(BigDecimal.TEN);
-
-        presenter.initialize(true);
-
-        assertEquals(MockedProvider.INVALID_SITE, mockedView.errorShown.getMessage());
-    }
-
-    @Test
-    public void ifAmountNotSetShowInvalidAmountError() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertEquals(MockedProvider.INVALID_AMOUNT, mockedView.errorShown.getMessage());
-    }
-
-    @Test
-    public void ifInvalidAmountSetShowInvalidAmountError() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setSite(Sites.ARGENTINA);
-        presenter.setAmount(BigDecimal.TEN.negate());
-
-        presenter.initialize(true);
-
-        assertEquals(MockedProvider.INVALID_AMOUNT, mockedView.errorShown.getMessage());
-    }
-
-    @Test
-    public void ifPaymentMethodSearchHasItemsShowThem() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertEquals(paymentMethodSearch.getGroups(), mockedView.searchItemsShown);
-    }
-
-    @Test
-    public void ifPaymentMethodSearchHasPayerCustomOptionsShowThem() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertEquals(paymentMethodSearch.getCustomSearchItems(), mockedView.customOptionsShown);
-    }
-
-    //Automatic selections
-
-    @Test
-    public void ifOnlyUniqueSearchItemAvailableRestartWithItSelected() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyTicketMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertEquals(paymentMethodSearch.getGroups().get(0), mockedView.itemShown);
-    }
-
-    @Test
-    public void ifOnlyCardPaymentTypeAvailableStartCardFlow() {
-
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyCreditCardMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        BigDecimal amount = BigDecimal.TEN;
-        presenter.setAmount(amount);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertTrue(mockedView.cardFlowStarted);
-        assertEquals(paymentMethodSearch.getGroups().get(0).getId(), mockedView.selectedPaymentType);
-        assertEquals(amount, mockedView.amountSentToCardFlow);
-    }
-
-    @Test
-    public void ifOnlyCardPaymentTypeAvailableAndCardAvailableDoNotSelectAutomatically() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyCreditCardAndOneCardMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        BigDecimal amount = BigDecimal.TEN;
-        presenter.setAmount(amount);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertTrue(mockedView.customOptionsShown != null);
-        assertFalse(mockedView.cardFlowStarted);
-        assertFalse(mockedView.isItemShown);
-    }
-
-    @Test
-    public void ifOnlyCardPaymentTypeAvailableAndAccountMoneyAvailableDoNotSelectAutomatically() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyCreditCardAndAccountMoneyMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        BigDecimal amount = BigDecimal.TEN;
-        presenter.setAmount(amount);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertTrue(mockedView.customOptionsShown != null);
-        assertFalse(mockedView.cardFlowStarted);
-        assertFalse(mockedView.isItemShown);
-    }
-
-    @Test
-    public void ifOnlyOffPaymentTypeAvailableAndAccountMoneyAvailableDoNotSelectAutomatically() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyOneOffTypeAndAccountMoneyMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        BigDecimal amount = BigDecimal.TEN;
-        presenter.setAmount(amount);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertTrue(mockedView.customOptionsShown != null);
-        assertFalse(mockedView.cardFlowStarted);
-        assertFalse(mockedView.isItemShown);
-    }
-
-    @Test
-    public void ifOnlyAccountMoneySelectItAutomatically() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyAccountMoneyMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        BigDecimal amount = BigDecimal.TEN;
-        presenter.setAmount(amount);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        assertEquals(paymentMethodSearch.getCustomSearchItems().get(0).getPaymentMethodId(), mockedView.selectedPaymentMethod.getId());
-    }
-
-    //User selections
-
-    @Test
-    public void ifItemSelectedShowItsChildren() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        mockedView.simulateItemSelection(1);
-
-        assertEquals(paymentMethodSearch.getGroups().get(1).getChildren(), mockedView.searchItemsShown);
-        assertEquals(paymentMethodSearch.getGroups().get(1), mockedView.itemShown);
-    }
-
-    @Test
-    public void ifCardPaymentTypeSelectedStartCardFlow() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        mockedView.simulateItemSelection(0);
-
-        assertEquals(paymentMethodSearch.getGroups().get(0).getId(), mockedView.selectedPaymentType);
-        assertTrue(mockedView.cardFlowStarted);
-    }
-
-    @Test
-    public void ifSavedCardSelectedStartSavedCardFlow() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        mockedView.simulateCustomItemSelection(1);
-
-        assertTrue(mockedView.savedCardFlowStarted);
-        assertTrue(mockedView.savedCardSelected.equals(paymentMethodSearch.getCards().get(0)));
-    }
-
-    @Test
-    public void ifAccountMoneySelectedSelectIt() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        mockedView.simulateCustomItemSelection(0);
-
-        assertEquals(paymentMethodSearch.getCustomSearchItems().get(0).getPaymentMethodId(), mockedView.selectedPaymentMethod.getId());
-    }
-
-    //Payment Preference tests
-    @Test
-    public void ifAllPaymentTypesExcludedShowError() {
-        PaymentPreference paymentPreference = new PaymentPreference();
-        paymentPreference.setExcludedPaymentTypeIds(PaymentTypes.getAllPaymentTypes());
-
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setSite(Sites.ARGENTINA);
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setPaymentPreference(paymentPreference);
-
-        presenter.initialize(true);
-
-        assertEquals(MockedProvider.ALL_TYPES_EXCLUDED, mockedView.errorShown.getMessage());
-    }
-
-    @Test
-    public void ifInvalidDefaultInstallmentsShowError() {
-        PaymentPreference paymentPreference = new PaymentPreference();
-        paymentPreference.setDefaultInstallments(BigDecimal.ONE.negate().intValue());
-
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setSite(Sites.ARGENTINA);
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setPaymentPreference(paymentPreference);
-
-        presenter.initialize(true);
-
-        assertEquals(MockedProvider.INVALID_DEFAULT_INSTALLMENTS, mockedView.errorShown.getMessage());
-    }
-
-    @Test
-    public void ifInvalidMaxInstallmentsShowError() {
-        PaymentPreference paymentPreference = new PaymentPreference();
-        paymentPreference.setMaxAcceptedInstallments(BigDecimal.ONE.negate().intValue());
-
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setSite(Sites.ARGENTINA);
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setPaymentPreference(paymentPreference);
-
-        presenter.initialize(true);
-
-        assertEquals(MockedProvider.INVALID_MAX_INSTALLMENTS, mockedView.errorShown.getMessage());
-    }
-
-
-    @Test
-    public void ifMaxSavedCardNotSetDoNotLimitCardsShown() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        Assert.assertEquals(paymentMethodSearch.getCustomSearchItems().size(), mockedView.customOptionsShown.size());
-    }
-
-    @Test
-    public void ifMaxSavedCardLimitCardsShown() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-        presenter.setMaxSavedCards(1);
-
-        presenter.initialize(true);
-
-        //Account money + 1 card
-        Assert.assertEquals(2, mockedView.customOptionsShown.size());
-    }
-
-    //Discounts
-    @Test
-    public void ifDiscountsAreNotEnabledNotShowDiscountRow() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-        presenter.setDiscountEnabled(false);
-
-        presenter.initialize(true);
-
-        mockedView.simulateItemSelection(0);
-
-        assertTrue(mockedView.showedDiscountRow);
-        assertTrue(presenter.getDiscount() == null);
-    }
-
-    @Test
-    public void ifDiscountsAreEnabledGetDirectDiscount() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        Discount discount = Discounts.getDiscountWithAmountOffMLA();
-        provider.setDiscountResponse(discount);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-    }
-
-    @Test
-    public void ifHasNotDirectDiscountsShowDiscountRow() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        ApiException apiException = Discounts.getDoNotFindCampaignApiException();
-        MercadoPagoError mpException = new MercadoPagoError(apiException);
-        provider.setDiscountResponse(mpException);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        mockedView.simulateItemSelection(0);
-
-        assertTrue(provider.failedResponse.getApiException().getError().equals(provider.CAMPAIGN_DOES_NOT_MATCH_ERROR));
-        assertTrue(mockedView.showedDiscountRow);
-    }
-
-    @Test
-    public void ifIsDirectDiscountNotEnabledNotGetDirectDiscount() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-        presenter.setDirectDiscountEnabled(false);
-
-        presenter.initialize(true);
-
-        mockedView.simulateItemSelection(0);
-
-        assertTrue(mockedView.showedDiscountRow);
-    }
-
-    @Test
-    public void ifHasNotDirectDiscountSetFalseDirectDiscountEnabled() {
-        MockedView mockedView = new MockedView();
-        MockedProvider provider = new MockedProvider();
-
-        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
-        provider.setResponse(paymentMethodSearch);
-
-        ApiException apiException = Discounts.getDoNotFindCampaignApiException();
-        MercadoPagoError mpException = new MercadoPagoError(apiException);
-        provider.setDiscountResponse(mpException);
-
-        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
-        presenter.attachView(mockedView);
-        presenter.attachResourcesProvider(provider);
-
-        presenter.setAmount(BigDecimal.TEN);
-        presenter.setSite(Sites.ARGENTINA);
-
-        presenter.initialize(true);
-
-        mockedView.simulateItemSelection(0);
-
-        assertFalse(presenter.getDirectDiscountEnabled());
-        assertTrue(mockedView.showedDiscountRow);
-    }
+//    @Test
+//    public void ifSiteNotSetShowInvalidSiteError() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = com.mercadopago.utils.PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(MockedProvider.INVALID_SITE, mockedView.errorShown.getMessage());
+//    }
+//
+//    @Test
+//    public void ifInvalidCurrencySetShowInvalidSiteError() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setSite(new Site("invalid_id", "invalid_currency"));
+//        presenter.setAmount(BigDecimal.TEN);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(MockedProvider.INVALID_SITE, mockedView.errorShown.getMessage());
+//    }
+//
+//    @Test
+//    public void ifAmountNotSetShowInvalidAmountError() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(MockedProvider.INVALID_AMOUNT, mockedView.errorShown.getMessage());
+//    }
+//
+//    @Test
+//    public void ifInvalidAmountSetShowInvalidAmountError() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setSite(Sites.ARGENTINA);
+//        presenter.setAmount(BigDecimal.TEN.negate());
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(MockedProvider.INVALID_AMOUNT, mockedView.errorShown.getMessage());
+//    }
+//
+//    @Test
+//    public void ifPaymentMethodSearchHasItemsShowThem() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(paymentMethodSearch.getGroups(), mockedView.searchItemsShown);
+//    }
+//
+//    @Test
+//    public void ifPaymentMethodSearchHasPayerCustomOptionsShowThem() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(paymentMethodSearch.getCustomSearchItems(), mockedView.customOptionsShown);
+//    }
+//
+//    //Automatic selections
+//
+//    @Test
+//    public void ifOnlyUniqueSearchItemAvailableRestartWithItSelected() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyTicketMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(paymentMethodSearch.getGroups().get(0), mockedView.itemShown);
+//    }
+//
+//    @Test
+//    public void ifOnlyCardPaymentTypeAvailableStartCardFlow() {
+//
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyCreditCardMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        BigDecimal amount = BigDecimal.TEN;
+//        presenter.setAmount(amount);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertTrue(mockedView.cardFlowStarted);
+//        assertEquals(paymentMethodSearch.getGroups().get(0).getId(), mockedView.selectedPaymentType);
+//        assertEquals(amount, mockedView.amountSentToCardFlow);
+//    }
+//
+//    @Test
+//    public void ifOnlyCardPaymentTypeAvailableAndCardAvailableDoNotSelectAutomatically() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyCreditCardAndOneCardMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        BigDecimal amount = BigDecimal.TEN;
+//        presenter.setAmount(amount);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertTrue(mockedView.customOptionsShown != null);
+//        assertFalse(mockedView.cardFlowStarted);
+//        assertFalse(mockedView.isItemShown);
+//    }
+//
+//    @Test
+//    public void ifOnlyCardPaymentTypeAvailableAndAccountMoneyAvailableDoNotSelectAutomatically() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyCreditCardAndAccountMoneyMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        BigDecimal amount = BigDecimal.TEN;
+//        presenter.setAmount(amount);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertTrue(mockedView.customOptionsShown != null);
+//        assertFalse(mockedView.cardFlowStarted);
+//        assertFalse(mockedView.isItemShown);
+//    }
+//
+//    @Test
+//    public void ifOnlyOffPaymentTypeAvailableAndAccountMoneyAvailableDoNotSelectAutomatically() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyOneOffTypeAndAccountMoneyMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        BigDecimal amount = BigDecimal.TEN;
+//        presenter.setAmount(amount);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertTrue(mockedView.customOptionsShown != null);
+//        assertFalse(mockedView.cardFlowStarted);
+//        assertFalse(mockedView.isItemShown);
+//    }
+//
+//    @Test
+//    public void ifOnlyAccountMoneySelectItAutomatically() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodSearchWithOnlyAccountMoneyMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        BigDecimal amount = BigDecimal.TEN;
+//        presenter.setAmount(amount);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(paymentMethodSearch.getCustomSearchItems().get(0).getPaymentMethodId(), mockedView.selectedPaymentMethod.getId());
+//    }
+//
+//    //User selections
+//
+//    @Test
+//    public void ifItemSelectedShowItsChildren() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateItemSelection(1);
+//
+//        assertEquals(paymentMethodSearch.getGroups().get(1).getChildren(), mockedView.searchItemsShown);
+//        assertEquals(paymentMethodSearch.getGroups().get(1), mockedView.itemShown);
+//    }
+//
+//    @Test
+//    public void ifCardPaymentTypeSelectedStartCardFlow() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateItemSelection(0);
+//
+//        assertEquals(paymentMethodSearch.getGroups().get(0).getId(), mockedView.selectedPaymentType);
+//        assertTrue(mockedView.cardFlowStarted);
+//    }
+//
+//    @Test
+//    public void ifSavedCardSelectedStartSavedCardFlow() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateCustomItemSelection(1);
+//
+//        assertTrue(mockedView.savedCardFlowStarted);
+//        assertTrue(mockedView.savedCardSelected.equals(paymentMethodSearch.getCards().get(0)));
+//    }
+//
+//    @Test
+//    public void ifAccountMoneySelectedSelectIt() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateCustomItemSelection(0);
+//
+//        assertEquals(paymentMethodSearch.getCustomSearchItems().get(0).getPaymentMethodId(), mockedView.selectedPaymentMethod.getId());
+//    }
+//
+//    //Payment Preference tests
+//    @Test
+//    public void ifAllPaymentTypesExcludedShowError() {
+//        PaymentPreference paymentPreference = new PaymentPreference();
+//        paymentPreference.setExcludedPaymentTypeIds(PaymentTypes.getAllPaymentTypes());
+//
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setSite(Sites.ARGENTINA);
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setPaymentPreference(paymentPreference);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(MockedProvider.ALL_TYPES_EXCLUDED, mockedView.errorShown.getMessage());
+//    }
+//
+//    @Test
+//    public void ifInvalidDefaultInstallmentsShowError() {
+//        PaymentPreference paymentPreference = new PaymentPreference();
+//        paymentPreference.setDefaultInstallments(BigDecimal.ONE.negate().intValue());
+//
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setSite(Sites.ARGENTINA);
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setPaymentPreference(paymentPreference);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(MockedProvider.INVALID_DEFAULT_INSTALLMENTS, mockedView.errorShown.getMessage());
+//    }
+//
+//    @Test
+//    public void ifInvalidMaxInstallmentsShowError() {
+//        PaymentPreference paymentPreference = new PaymentPreference();
+//        paymentPreference.setMaxAcceptedInstallments(BigDecimal.ONE.negate().intValue());
+//
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setSite(Sites.ARGENTINA);
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setPaymentPreference(paymentPreference);
+//
+//        presenter.initialize(true);
+//
+//        assertEquals(MockedProvider.INVALID_MAX_INSTALLMENTS, mockedView.errorShown.getMessage());
+//    }
+//
+//
+//    @Test
+//    public void ifMaxSavedCardNotSetDoNotLimitCardsShown() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        Assert.assertEquals(paymentMethodSearch.getCustomSearchItems().size(), mockedView.customOptionsShown.size());
+//    }
+//
+//    @Test
+//    public void ifMaxSavedCardLimitCardsShown() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//        presenter.setMaxSavedCards(1);
+//
+//        presenter.initialize(true);
+//
+//        //Account money + 1 card
+//        Assert.assertEquals(2, mockedView.customOptionsShown.size());
+//    }
+//
+//    //Discounts
+//    @Test
+//    public void ifDiscountsAreNotEnabledNotShowDiscountRow() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//        presenter.setDiscountEnabled(false);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateItemSelection(0);
+//
+//        assertTrue(mockedView.showedDiscountRow);
+//        assertTrue(presenter.getDiscount() == null);
+//    }
+//
+//    @Test
+//    public void ifDiscountsAreEnabledGetDirectDiscount() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        Discount discount = Discounts.getDiscountWithAmountOffMLA();
+//        provider.setDiscountResponse(discount);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//    }
+//
+//    @Test
+//    public void ifHasNotDirectDiscountsShowDiscountRow() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        ApiException apiException = Discounts.getDoNotFindCampaignApiException();
+//        MercadoPagoError mpException = new MercadoPagoError(apiException);
+//        provider.setDiscountResponse(mpException);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateItemSelection(0);
+//
+//        assertTrue(provider.failedResponse.getApiException().getError().equals(provider.CAMPAIGN_DOES_NOT_MATCH_ERROR));
+//        assertTrue(mockedView.showedDiscountRow);
+//    }
+//
+//    @Test
+//    public void ifIsDirectDiscountNotEnabledNotGetDirectDiscount() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//        presenter.setDirectDiscountEnabled(false);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateItemSelection(0);
+//
+//        assertTrue(mockedView.showedDiscountRow);
+//    }
+//
+//    @Test
+//    public void ifHasNotDirectDiscountSetFalseDirectDiscountEnabled() {
+//        MockedView mockedView = new MockedView();
+//        MockedProvider provider = new MockedProvider();
+//
+//        PaymentMethodSearch paymentMethodSearch = PaymentMethodSearchs.getCompletePaymentMethodSearchMLA();
+//        provider.setResponse(paymentMethodSearch);
+//
+//        ApiException apiException = Discounts.getDoNotFindCampaignApiException();
+//        MercadoPagoError mpException = new MercadoPagoError(apiException);
+//        provider.setDiscountResponse(mpException);
+//
+//        PaymentVaultPresenter presenter = new PaymentVaultPresenter();
+//        presenter.attachView(mockedView);
+//        presenter.attachResourcesProvider(provider);
+//
+//        presenter.setAmount(BigDecimal.TEN);
+//        presenter.setSite(Sites.ARGENTINA);
+//
+//        presenter.initialize(true);
+//
+//        mockedView.simulateItemSelection(0);
+//
+//        assertFalse(presenter.getDirectDiscountEnabled());
+//        assertTrue(mockedView.showedDiscountRow);
+//    }
 
     private class MockedProvider implements PaymentVaultProvider {
 

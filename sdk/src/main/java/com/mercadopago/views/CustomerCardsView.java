@@ -1,8 +1,11 @@
 package com.mercadopago.views;
 
+import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.exceptions.MercadoPagoError;
 import com.mercadopago.model.Card;
 import com.mercadopago.mvp.MvpView;
+
+import java.util.List;
 
 /**
  * Created by mromar on 4/11/17.
@@ -10,7 +13,7 @@ import com.mercadopago.mvp.MvpView;
 
 public interface CustomerCardsView extends MvpView {
 
-    void fillData();
+    void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback);
 
     void showAlertDialog(Card card);
 

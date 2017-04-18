@@ -63,18 +63,18 @@ public class MercadoPagoServicesTest extends BaseTest<CheckoutActivity> {
         }
     }
 
-    public void testNullKeyType() {
-
-        try {
-            new MercadoPagoServices.Builder()
-                    .setContext(getApplicationContext())
-                    .setPublicKey(StaticMock.DUMMY_MERCHANT_PUBLIC_KEY)
-                    .build();
-            fail("Start should have failed on key type null");
-        } catch (Exception ex) {
-            assertTrue(ex.getMessage().equals("key type is null"));
-        }
-    }
+//    public void testNullKeyType() {
+//
+//        try {
+//            new MercadoPagoServices.Builder()
+//                    .setContext(getApplicationContext())
+//                    .setPublicKey(StaticMock.DUMMY_MERCHANT_PUBLIC_KEY)
+//                    .build();
+//            fail("Start should have failed on key type null");
+//        } catch (Exception ex) {
+//            assertTrue(ex.getMessage().equals("key type is null"));
+//        }
+//    }
 
     public void testNullKey() {
 

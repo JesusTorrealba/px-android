@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.mercadopago.callbacks.FailureRecovery;
+import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.exceptions.MercadoPagoError;
 import com.mercadopago.model.Card;
 import com.mercadopago.model.Customer;
@@ -14,6 +15,8 @@ import com.mercadopago.util.MercadoPagoUtil;
 import com.mercadopago.views.CustomerCardsView;
 
 import java.util.List;
+
+import static com.mercadopago.util.TextUtil.isEmpty;
 
 /**
  * Created by mromar on 4/10/17.
@@ -33,7 +36,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         if (mCards == null) {
             getCustomerAsync();
         } else {
-            getView().fillData();
+            getView().showCards(mCards, getOnSelectedCallback());
         }
     }
 
@@ -44,8 +47,9 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
             @Override
             public void onSuccess(Customer customer) {
                 mCards = customer.getCards();
+
                 getView().hideProgress();
-                getView().fillData();
+                getView().showCards(mCards, getOnSelectedCallback());
             }
 
             @Override
@@ -63,7 +67,18 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         });
     }
 
-    public void resolveCardResponse(final Card card) {
+    private OnSelectedCallback<Card> getOnSelectedCallback() {
+        return new OnSelectedCallback<Card>() {
+            @Override
+            public void onSelected(Card card) {
+                if (card != null) {
+                    resolveCardResponse(card);
+                }
+            }
+        };
+    }
+
+    private void resolveCardResponse(final Card card) {
         if (isConfirmPromptEnabled()) {
             getView().showAlertDialog(card);
         } else {
@@ -72,7 +87,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
     }
 
     private boolean isConfirmPromptEnabled() {
-        return !TextUtils.isEmpty(mSelectionConfirmPromptText);
+        return !isEmpty(mSelectionConfirmPromptText);
     }
 
     public void recoverFromFailure() {

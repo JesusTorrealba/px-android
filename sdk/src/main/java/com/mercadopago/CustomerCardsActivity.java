@@ -77,7 +77,8 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
         try {
             Gson gson = new Gson();
-            Type listType = new TypeToken<List<Card>>(){}.getType();
+            Type listType = new TypeToken<List<Card>>() {
+            }.getType();
 
             cards = gson.fromJson(this.getIntent().getStringExtra("cards"), listType);
         } catch (Exception ex) {
@@ -145,7 +146,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
     protected void decorateUpArrow(Toolbar toolbar) {
         if (mDecorationPreference.isDarkFontEnabled()) {
             mTitle.setTextColor(mDecorationPreference.getDarkFontColor(this));
-
             int darkFont = mDecorationPreference.getDarkFontColor(this);
             Drawable upArrow = toolbar.getNavigationIcon();
             if (upArrow != null && getSupportActionBar() != null) {
@@ -168,12 +168,12 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
     }
 
     @Override
-    public void fillData() {
+    public void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback) {
         SavedCardsListView savedCardsView = new MercadoPagoComponents.Views.SavedCardsListViewBuilder()
                 .setContext(this)
-                .setCards(mPresenter.getCards())
+                .setCards(cards)
+                .setOnSelectedCallback(onSelectedCallback)
                 .setCustomActionMessage(mPresenter.getCustomActionMessage())
-                .setOnSelectedCallback(getOnSelectedCallback())
                 .setSelectionImage(mPresenter.getSelectionImageDrawableResId())
                 .build();
 
@@ -244,17 +244,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         if (mActivityActive) {
             ApiUtil.showApiExceptionError(this, apiException);
         }
-    }
-
-    private OnSelectedCallback<Card> getOnSelectedCallback() {
-        return new OnSelectedCallback<Card>() {
-            @Override
-            public void onSelected(Card card) {
-                if (card != null) {
-                    mPresenter.resolveCardResponse(card);
-                }
-            }
-        };
     }
 
     public void onOtherPaymentMethodClicked(View view) {
