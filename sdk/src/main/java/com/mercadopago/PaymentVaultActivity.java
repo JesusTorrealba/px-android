@@ -125,7 +125,6 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
             setTheme(R.style.Theme_MercadoPagoTheme_NoActionBar);
         }
 
-        mActivityActive = true;
         setContentView();
         initializeControls();
 
