@@ -595,7 +595,8 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
 
     @Override
     public void onBackPressed() {
-        MPTracker.getInstance().trackEvent(PAYMENT_VAULT_SCREEN_NAME, "BACK_PRESSED", "2", mPublicKey, mPaymentVaultPresenter.getSite().getId(), BuildConfig.VERSION_NAME, this);
+        String siteId = mPaymentVaultPresenter.getSite() == null ? "" : mPaymentVaultPresenter.getSite().getId();
+        MPTracker.getInstance().trackEvent(PAYMENT_VAULT_SCREEN_NAME, "BACK_PRESSED", "2", mPublicKey, siteId, BuildConfig.VERSION_NAME, this);
         Intent returnIntent = new Intent();
         returnIntent.putExtra("discount", JsonUtil.getInstance().toJson(mPaymentVaultPresenter.getDiscount()));
         setResult(RESULT_CANCELED, returnIntent);
@@ -615,11 +616,13 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
         outState.putString(MERCHANT_BASE_URL_BUNDLE, mMerchantBaseUrl);
         outState.putString(MERCHANT_GET_CUSTOMER_ADDITIONAL_INFO, JsonUtil.getInstance().toJson(mMerchantGetCustomerAdditionalInfo));
         outState.putBoolean(SHOW_BANK_DEALS_BUNDLE, mShowBankDeals);
+        mPaymentVaultPresenter.detachView();
         PaymentVaultActivity.savedPresenter = mPaymentVaultPresenter;
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        mPaymentVaultPresenter.attachView(this);
         mPaymentVaultPresenter = PaymentVaultActivity.savedPresenter;
 
         mPublicKey = savedInstanceState.getString(PUBLIC_KEY_BUNDLE);

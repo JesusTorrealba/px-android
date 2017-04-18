@@ -734,6 +734,7 @@ public class PaymentVaultPresenterTest {
 
     @Test
     public void whenResourcesRetrievalFailedAndRecoverRequestedThenRepeatRetrieval() {
+        //Set Up
         MockedView mockedView = new MockedView();
         MockedProvider provider = new MockedProvider();
 
@@ -751,6 +752,7 @@ public class PaymentVaultPresenterTest {
         presenter.setMaxSavedCards(1);
 
         presenter.initialize(true);
+        //Presenter gets resources, fails
 
         provider.setResponse(PaymentMethodSearchs.getCompletePaymentMethodSearchMLA());
         presenter.recoverFromFailure();
