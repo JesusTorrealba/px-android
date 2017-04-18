@@ -9,10 +9,6 @@ import java.util.List;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by mreverter on 4/18/17.
- */
-
 public class PayerCostTest {
 
     @Test
