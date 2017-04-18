@@ -77,8 +77,8 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
         try {
             Gson gson = new Gson();
-            Type listType = new TypeToken<List<Card>>() {
-            }.getType();
+            Type listType = new TypeToken<List<Card>>(){}.getType();
+
             cards = gson.fromJson(this.getIntent().getStringExtra("cards"), listType);
         } catch (Exception ex) {
             cards = null;

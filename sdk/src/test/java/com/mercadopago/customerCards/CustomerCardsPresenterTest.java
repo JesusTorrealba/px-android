@@ -14,7 +14,6 @@ import org.junit.Test;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by mromar on 4/17/17.
@@ -23,7 +22,24 @@ import static junit.framework.Assert.assertTrue;
 public class CustomerCardsPresenterTest {
 
     @Test
-    public void getCardsIfCardsIsNull() {
+    public void ifCardsAreNullGetCards() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Card> cards = Cards.getCardsMLA();
+        provider.setResponse(cards);
+
+        CustomerCardsPresenter presenter = new CustomerCardsPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.initialize();
+
+        assertEquals(provider.successfulResponse, cards);
+    }
+
+    @Test
+    public void ifCardsAreNullGetCardsAndFillData() {
         MockedView mockedView = new MockedView();
         MockedProvider provider = new MockedProvider();
 
