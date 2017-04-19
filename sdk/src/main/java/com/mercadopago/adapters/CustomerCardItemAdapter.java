@@ -8,24 +8,30 @@ import android.view.ViewGroup;
 import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.core.MercadoPagoUI;
 import com.mercadopago.model.Card;
+import com.mercadopago.uicontrollers.savedcards.CustomerCardViewController;
 import com.mercadopago.uicontrollers.savedcards.SavedCardView;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerCardsAdapter extends RecyclerView.Adapter<CustomerCardsAdapter.ViewHolder> {
+public class CustomerCardItemAdapter extends RecyclerView.Adapter<CustomerCardItemAdapter.ViewHolder> {
 
     private Context mContext;
-    private List<Card> mData;
+    private List<CustomerCardViewController> mData;
     private OnSelectedCallback<Card> mSelectionCallback;
     private int mSelectionImageResId;
 
-    public CustomerCardsAdapter(Context context, List<Card> data, OnSelectedCallback<Card> callback) {
+    public CustomerCardItemAdapter() {
+        mData = new ArrayList<>();
+    }
+
+    public CustomerCardItemAdapter(Context context, List<Card> data, OnSelectedCallback<Card> callback) {
         mContext = context;
         mData = data;
         mSelectionCallback = callback;
     }
 
-    public CustomerCardsAdapter(Context context, List<Card> cards, OnSelectedCallback<Card> onSelectedCallback, int selectionImageResId) {
+    public CustomerCardItemAdapter(Context context, List<Card> cards, OnSelectedCallback<Card> onSelectedCallback, int selectionImageResId) {
         mContext = context;
         mData = cards;
         mSelectionCallback = onSelectedCallback;
@@ -33,8 +39,7 @@ public class CustomerCardsAdapter extends RecyclerView.Adapter<CustomerCardsAdap
     }
 
     @Override
-    public CustomerCardsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                              int position) {
+    public CustomerCardItemAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int position) {
 
         Card card = mData.get(position);
 
@@ -67,10 +72,18 @@ public class CustomerCardsAdapter extends RecyclerView.Adapter<CustomerCardsAdap
         return mData.size();
     }
 
+    public void addItems(List<CustomerCardViewController> items) {
+        mData.addAll(items);
+    }
+
+    public void notifyItemInserted() {
+        notifyItemInserted(mData.size() - 1);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public Card mCard;
-        public SavedCardView mSavedCardView;
+        private Card mCard;
+        private SavedCardView mSavedCardView;
 
         public ViewHolder(SavedCardView paymentMethodCardRow, Card card) {
             super(paymentMethodCardRow.getView());

@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.mercadopago.R;
-import com.mercadopago.adapters.CustomerCardsAdapter;
+import com.mercadopago.adapters.CustomerCardItemAdapter;
 import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.model.Card;
 import com.mercadopago.uicontrollers.CustomViewController;
@@ -72,7 +72,7 @@ public class SavedCardsListView implements CustomViewController {
         mSavedCardsRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
 
         // Load cards
-        mSavedCardsRecyclerView.setAdapter(new CustomerCardsAdapter(mContext, mCards, mOnSelectedCallback, mSelectionImageResId));
+        mSavedCardsRecyclerView.setAdapter(new CustomerCardItemAdapter(mContext, mCards, mOnSelectedCallback, mSelectionImageResId));
 
     }
 }

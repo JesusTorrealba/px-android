@@ -16,15 +16,17 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mercadopago.adapters.CustomerCardItemAdapter;
 import com.mercadopago.callbacks.OnSelectedCallback;
-import com.mercadopago.core.MercadoPagoComponents;
 import com.mercadopago.exceptions.MercadoPagoError;
 import com.mercadopago.model.ApiException;
 import com.mercadopago.model.Card;
 import com.mercadopago.preferences.DecorationPreference;
 import com.mercadopago.presenters.CustomerCardsPresenter;
 import com.mercadopago.providers.CustomerCardsProviderImpl;
-import com.mercadopago.uicontrollers.savedcards.SavedCardsListView;
+import com.mercadopago.uicontrollers.GridSpacingItemDecoration;
+import com.mercadopago.uicontrollers.savedcards.CustomerCardOption;
+import com.mercadopago.uicontrollers.savedcards.CustomerCardViewController;
 import com.mercadopago.util.ApiUtil;
 import com.mercadopago.util.ErrorUtil;
 import com.mercadopago.util.JsonUtil;
@@ -33,6 +35,7 @@ import com.mercadopago.util.ScaleUtil;
 import com.mercadopago.views.CustomerCardsView;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.mercadopago.PaymentVaultActivity.COLUMN_SPACING_DP_VALUE;
@@ -52,7 +55,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     //Controls
     protected CustomerCardsPresenter mPresenter;
-    protected RecyclerView mCardsRecyclerView;
+    protected RecyclerView mItemsRecyclerView;
     protected TextView mTitle;
 
     @Override
@@ -113,7 +116,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         initializePaymentOptionsRecyclerView();
 
         mSavedCardsContainer = (ViewGroup) findViewById(R.id.mpsdkRegularLayout);
-
     }
 
     private void initializeToolbar() {
@@ -143,11 +145,37 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     protected void initializePaymentOptionsRecyclerView() {
         int columns = COLUMNS;
-        mCardsRecyclerView = (RecyclerView) findViewById(R.id.mpsdkCardsList);
-        mCardsRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
-        mCardsRecyclerView.addItemDecoration(new GridSpacingItemDecoration(columns, ScaleUtil.getPxFromDp(COLUMN_SPACING_DP_VALUE, this), true));
-        CardsAdapter groupsAdapter = new PaymentMethodSearchItemAdapter();
-        mCardsRecyclerView.setAdapter(groupsAdapter);
+        mItemsRecyclerView = (RecyclerView) findViewById(R.id.mpsdkCardsList);
+        mItemsRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
+        mItemsRecyclerView.addItemDecoration(new GridSpacingItemDecoration(columns, ScaleUtil.getPxFromDp(COLUMN_SPACING_DP_VALUE, this), true));
+        CustomerCardItemAdapter groupsAdapter = new CustomerCardItemAdapter();
+        mItemsRecyclerView.setAdapter(groupsAdapter);
+    }
+
+    public void showSearchItems(List<Card> searchItems, OnSelectedCallback<Card> customerCardItemSelectionCallback) {
+        populateSearchList(searchItems, customerCardItemSelectionCallback);
+    }
+
+    protected void populateSearchList(List<Card> items, OnSelectedCallback<Card> onSelectedCallback) {
+        CustomerCardItemAdapter adapter = (CustomerCardItemAdapter) mItemsRecyclerView.getAdapter();
+        List<CustomerCardViewController> customViewControllers = createSearchItemsViewControllers(items, onSelectedCallback);
+        adapter.addItems(customViewControllers);
+        adapter.notifyItemInserted();
+    }
+
+    private List<CustomerCardViewController> createSearchItemsViewControllers(List<Card> items, final OnSelectedCallback<Card> onSelectedCallback) {
+        List<CustomerCardViewController> customViewControllers = new ArrayList<>();
+        for (final Card item : items) {
+            CustomerCardViewController viewController = new CustomerCardOption(this, item, mDecorationPreference);
+            viewController.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onSelectedCallback.onSelected(item);
+                }
+            });
+            customViewControllers.add(viewController);
+        }
+        return customViewControllers;
     }
 
     private boolean isCustomColorSet() {
@@ -189,15 +217,17 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     @Override
     public void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback) {
-        SavedCardsListView savedCardsView = new MercadoPagoComponents.Views.SavedCardsListViewBuilder()
-                .setContext(this)
-                .setCards(cards)
-                .setOnSelectedCallback(onSelectedCallback)
-                .setCustomActionMessage(mPresenter.getCustomActionMessage())
-                .setSelectionImage(mPresenter.getSelectionImageDrawableResId())
-                .build();
+//        SavedCardsListView savedCardsView = new MercadoPagoComponents.Views.SavedCardsListViewBuilder()
+//                .setContext(this)
+//                .setCards(cards)
+//                .setOnSelectedCallback(onSelectedCallback)
+//                .setCustomActionMessage(mPresenter.getCustomActionMessage())
+//                .setSelectionImage(mPresenter.getSelectionImageDrawableResId())
+//                .build();
+//
+//        savedCardsView.drawInParent(mSavedCardsContainer);
 
-        savedCardsView.drawInParent(mSavedCardsContainer);
+        showSearchItems(cards, onSelectedCallback);
     }
 
     @Override

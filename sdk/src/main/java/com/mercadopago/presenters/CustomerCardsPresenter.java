@@ -66,7 +66,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         });
     }
 
-    private OnSelectedCallback<Card> getOnSelectedCallback() {
+    public OnSelectedCallback<Card> getOnSelectedCallback() {
         return new OnSelectedCallback<Card>() {
             @Override
             public void onSelected(Card card) {
