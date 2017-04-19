@@ -60,19 +60,19 @@ public class SavedCardsListView implements CustomViewController {
     }
 
     public void drawInParent(ViewGroup parent) {
-        inflateInParent(parent, true);
-        initializeControls();
-        if (!TextUtils.isEmpty(mFooterText)) {
-            mFooter.setVisibility(View.VISIBLE);
-            mFooterTextView.setText(mFooterText);
-        }
-        mSavedCardsRecyclerView.setHasFixedSize(true);
-
-        // Set a linear layout manager
-        mSavedCardsRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-
-        // Load cards
-        mSavedCardsRecyclerView.setAdapter(new CustomerCardItemAdapter(mContext, mCards, mOnSelectedCallback, mSelectionImageResId));
+//        inflateInParent(parent, true);
+//        initializeControls();
+//        if (!TextUtils.isEmpty(mFooterText)) {
+//            mFooter.setVisibility(View.VISIBLE);
+//            mFooterTextView.setText(mFooterText);
+//        }
+//        mSavedCardsRecyclerView.setHasFixedSize(true);
+//
+//        // Set a linear layout manager
+//        mSavedCardsRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+//
+//        // Load cards
+//        mSavedCardsRecyclerView.setAdapter(new CustomerCardItemAdapter(mContext, mCards, mOnSelectedCallback, mSelectionImageResId));
 
     }
 }

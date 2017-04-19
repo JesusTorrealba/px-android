@@ -10,6 +10,7 @@ import com.mercadopago.R;
 import com.mercadopago.customviews.MPTextView;
 import com.mercadopago.model.Card;
 import com.mercadopago.preferences.DecorationPreference;
+import com.mercadopago.util.MercadoPagoUtil;
 
 /**
  * Created by mromar on 4/19/17.
@@ -56,6 +57,8 @@ public class CustomerCardOption implements CustomerCardViewController {
         }
 
         public void draw() {
+            mDescription.setText("Terminada en");
+            mComment.setText(mItem.getLastFourDigits());
 //            if (mItem.hasDescription()) {
 //                mDescription.setVisibility(View.VISIBLE);
 //                mDescription.setText(mItem.getDescription());
@@ -66,25 +69,26 @@ public class CustomerCardOption implements CustomerCardViewController {
 //                mComment.setText(mItem.getComment());
 //            }
 //
-//            int resourceId = 0;
+            int resourceId = 0;
 //
 //            Boolean needsTint = itemNeedsTint(mItem);
-//            String imageId;
+            String imageId;
 //            if(needsTint) {
-//                imageId = TO_TINT_IMAGES_PREFIX + mItem.getId();
+//                imageId = TO_TINT_IMAGES_PREFIX + mItem.getPaymentMethod().getId();//mItem.getId();
+            imageId = mItem.getPaymentMethod().getId();
 //            } else {
 //                imageId = mItem.getId();
 //            }
 //
 //            if (mItem.isIconRecommended()) {
-//                resourceId = MercadoPagoUtil.getPaymentMethodSearchItemIcon(mContext, imageId);
+                resourceId = MercadoPagoUtil.getPaymentMethodSearchItemIcon(mContext, imageId);
 //            }
 //
-//            if (resourceId != 0) {
-//                mIcon.setImageResource(resourceId);
-//            } else {
-//                mIcon.setVisibility(View.GONE);
-//            }
+            if (resourceId != 0) {
+                mIcon.setImageResource(resourceId);
+            } else {
+                mIcon.setVisibility(View.GONE);
+            }
 //
 //            if(needsTint) {
 //                mIcon.setColorFilter(mDecorationPreference.getBaseColor(), PorterDuff.Mode.MULTIPLY);

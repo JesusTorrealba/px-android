@@ -1,57 +1,30 @@
 package com.mercadopago.adapters;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 import android.view.ViewGroup;
 
-import com.mercadopago.callbacks.OnSelectedCallback;
-import com.mercadopago.core.MercadoPagoUI;
-import com.mercadopago.model.Card;
+import com.mercadopago.uicontrollers.CustomViewController;
 import com.mercadopago.uicontrollers.savedcards.CustomerCardViewController;
-import com.mercadopago.uicontrollers.savedcards.SavedCardView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerCardItemAdapter extends RecyclerView.Adapter<CustomerCardItemAdapter.ViewHolder> {
 
-    private Context mContext;
-    private List<CustomerCardViewController> mData;
-    private OnSelectedCallback<Card> mSelectionCallback;
-    private int mSelectionImageResId;
+    private List<CustomerCardViewController> mItems;
 
     public CustomerCardItemAdapter() {
-        mData = new ArrayList<>();
-    }
-
-    public CustomerCardItemAdapter(Context context, List<Card> data, OnSelectedCallback<Card> callback) {
-        mContext = context;
-        mData = data;
-        mSelectionCallback = callback;
-    }
-
-    public CustomerCardItemAdapter(Context context, List<Card> cards, OnSelectedCallback<Card> onSelectedCallback, int selectionImageResId) {
-        mContext = context;
-        mData = cards;
-        mSelectionCallback = onSelectedCallback;
-        mSelectionImageResId = selectionImageResId;
+        mItems = new ArrayList<>();
     }
 
     @Override
     public CustomerCardItemAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int position) {
 
-        Card card = mData.get(position);
+        CustomViewController item = mItems.get(position);
 
-        SavedCardView savedCardView = new MercadoPagoUI.Views.SavedCardViewBuilder()
-                .setContext(mContext)
-                .setCard(card)
-                .setSelectionImage(mSelectionImageResId)
-                .build();
+        item.inflateInParent(parent, false);
 
-        savedCardView.inflateInParent(parent, false);
-
-        return new ViewHolder(savedCardView, card);
+        return new ViewHolder(item);
     }
 
     @Override
@@ -61,42 +34,37 @@ public class CustomerCardItemAdapter extends RecyclerView.Adapter<CustomerCardIt
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.mSavedCardView.draw();
-        if (position != mData.size() - 1) {
-            holder.mSavedCardView.showSeparator();
-        }
+        CustomerCardViewController viewController = mItems.get(position);
+        viewController.draw();
     }
 
     @Override
     public int getItemCount() {
-        return mData.size();
+        return mItems.size();
     }
 
     public void addItems(List<CustomerCardViewController> items) {
-        mData.addAll(items);
+        mItems.addAll(items);
+    }
+
+    public void clear() {
+        int size = this.mItems.size();
+        this.mItems.clear();
+        notifyItemRangeRemoved(0, size);
     }
 
     public void notifyItemInserted() {
-        notifyItemInserted(mData.size() - 1);
+        notifyItemInserted(mItems.size() - 1);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private Card mCard;
-        private SavedCardView mSavedCardView;
+        private CustomViewController mViewController;
 
-        public ViewHolder(SavedCardView paymentMethodCardRow, Card card) {
-            super(paymentMethodCardRow.getView());
-            mCard = card;
-            mSavedCardView = paymentMethodCardRow;
-
-            mSavedCardView.initializeControls();
-            mSavedCardView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mSelectionCallback.onSelected(mCard);
-                }
-            });
+        public ViewHolder(CustomViewController viewController) {
+            super(viewController.getView());
+            mViewController = viewController;
+            mViewController.initializeControls();
         }
     }
 }

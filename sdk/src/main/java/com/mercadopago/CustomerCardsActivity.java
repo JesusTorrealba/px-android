@@ -217,16 +217,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     @Override
     public void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback) {
-//        SavedCardsListView savedCardsView = new MercadoPagoComponents.Views.SavedCardsListViewBuilder()
-//                .setContext(this)
-//                .setCards(cards)
-//                .setOnSelectedCallback(onSelectedCallback)
-//                .setCustomActionMessage(mPresenter.getCustomActionMessage())
-//                .setSelectionImage(mPresenter.getSelectionImageDrawableResId())
-//                .build();
-//
-//        savedCardsView.drawInParent(mSavedCardsContainer);
-
+        //TODO cambiar
         showSearchItems(cards, onSelectedCallback);
     }
 
