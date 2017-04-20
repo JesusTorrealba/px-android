@@ -10,6 +10,7 @@ import com.mercadopago.model.Customer;
 import com.mercadopago.mvp.MvpPresenter;
 import com.mercadopago.mvp.OnResourcesRetrievedCallback;
 import com.mercadopago.providers.CustomerCardsProvider;
+import com.mercadopago.uicontrollers.savedcards.CustomerCardItem;
 import com.mercadopago.util.MercadoPagoUtil;
 import com.mercadopago.views.CustomerCardsView;
 
@@ -66,18 +67,26 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         });
     }
 
-    public OnSelectedCallback<Card> getOnSelectedCallback() {
-        return new OnSelectedCallback<Card>() {
+    public OnSelectedCallback<CustomerCardItem> getOnSelectedCallback() {
+        return new OnSelectedCallback<CustomerCardItem>() {
             @Override
-            public void onSelected(Card card) {
-                if (card != null) {
-                    resolveCardResponse(card);
+            public void onSelected(CustomerCardItem customerCardItem) {
+                if (customerCardItem != null) {
+                    resolveCustomerCardItemResponse(customerCardItem);
                 }
             }
         };
     }
 
-    private void resolveCardResponse(final Card card) {
+    private void resolveCustomerCardItemResponse(final CustomerCardItem customerCardItem) {
+        if (customerCardItem.hasActionMessage()) {
+            //TODO tomar acción
+        } else {
+            resolveCardResponse(customerCardItem.getCard());
+        }
+    }
+
+    private void resolveCardResponse(Card card) {
         if (isConfirmPromptEnabled()) {
             getView().showAlertDialog(card);
         } else {

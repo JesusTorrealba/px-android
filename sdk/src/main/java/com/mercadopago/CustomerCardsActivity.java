@@ -155,7 +155,7 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
     }
 
     @Override
-    public void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback) {
+    public void showCards(List<Card> cards, OnSelectedCallback<CustomerCardItem> onSelectedCallback) {
         List<CustomerCardItem> customerCardItems = getCustomerCardItemList(cards);
         populateCustomerCardList(customerCardItems, onSelectedCallback);
     }
@@ -178,14 +178,14 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         return customerCardItems;
     }
 
-    protected void populateCustomerCardList(List<CustomerCardItem> items, OnSelectedCallback<Card> onSelectedCallback) {
+    protected void populateCustomerCardList(List<CustomerCardItem> items, OnSelectedCallback<CustomerCardItem> onSelectedCallback) {
         CustomerCardItemAdapter adapter = (CustomerCardItemAdapter) mItemsRecyclerView.getAdapter();
         List<CustomerCardViewController> customViewControllers = createItemsViewControllers(items, onSelectedCallback);
         adapter.addItems(customViewControllers);
         adapter.notifyItemInserted();
     }
 
-    private List<CustomerCardViewController> createItemsViewControllers(List<CustomerCardItem> items, final OnSelectedCallback<Card> onSelectedCallback) {
+    private List<CustomerCardViewController> createItemsViewControllers(List<CustomerCardItem> items, final OnSelectedCallback<CustomerCardItem> onSelectedCallback) {
         List<CustomerCardViewController> customViewControllers = new ArrayList<>();
         for (final CustomerCardItem item : items) {
             CustomerCardViewController viewController = new CustomerCardOption(this, item, mDecorationPreference);

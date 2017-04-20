@@ -4,6 +4,7 @@ import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.exceptions.MercadoPagoError;
 import com.mercadopago.model.Card;
 import com.mercadopago.mvp.MvpView;
+import com.mercadopago.uicontrollers.savedcards.CustomerCardItem;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
 
 public interface CustomerCardsView extends MvpView {
 
-    void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback);
+    void showCards(List<Card> cards, OnSelectedCallback<CustomerCardItem> onSelectedCallback);
 
     void showAlertDialog(Card card);
 
