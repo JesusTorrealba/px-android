@@ -11,7 +11,11 @@ import java.util.List;
 
 public class CustomerCardItemAdapter extends RecyclerView.Adapter<CustomerCardItemAdapter.ViewHolder> {
 
+    public static final int ITEM_TYPE_CARD = 0;
+    public static final int ITEM_TYPE_MESSAGE = 1;
+
     private List<CustomerCardViewController> mItems;
+    private CustomerCardViewController mItem;
 
     public CustomerCardItemAdapter() {
         mItems = new ArrayList<>();
@@ -19,17 +23,23 @@ public class CustomerCardItemAdapter extends RecyclerView.Adapter<CustomerCardIt
 
     @Override
     public CustomerCardItemAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int position) {
+        mItem = mItems.get(position);
+        mItem.inflateInParent(parent, false);
 
-        CustomViewController item = mItems.get(position);
-
-        item.inflateInParent(parent, false);
-
-        return new ViewHolder(item);
+        return new ViewHolder(mItem);
     }
 
     @Override
     public int getItemViewType(int position) {
-        return position;
+        int viewType;
+
+        if (mItem.hasActionMessage()) {
+            viewType = ITEM_TYPE_MESSAGE;
+        } else {
+            viewType = ITEM_TYPE_CARD;
+        }
+
+        return viewType;
     }
 
     @Override

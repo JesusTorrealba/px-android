@@ -12,4 +12,5 @@ public interface CustomerCardViewController extends CustomViewController {
 
     void draw();
     void setOnClickListener(View.OnClickListener listener);
+    boolean hasActionMessage();
 }

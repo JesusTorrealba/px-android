@@ -25,6 +25,7 @@ import com.mercadopago.preferences.DecorationPreference;
 import com.mercadopago.presenters.CustomerCardsPresenter;
 import com.mercadopago.providers.CustomerCardsProviderImpl;
 import com.mercadopago.uicontrollers.GridSpacingItemDecoration;
+import com.mercadopago.uicontrollers.savedcards.CustomerCardItem;
 import com.mercadopago.uicontrollers.savedcards.CustomerCardOption;
 import com.mercadopago.uicontrollers.savedcards.CustomerCardViewController;
 import com.mercadopago.util.ApiUtil;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.mercadopago.PaymentVaultActivity.COLUMN_SPACING_DP_VALUE;
+import static com.mercadopago.util.TextUtils.isEmpty;
 
 public class CustomerCardsActivity extends MercadoPagoBaseActivity implements CustomerCardsView {
 
@@ -152,20 +154,40 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         mItemsRecyclerView.setAdapter(groupsAdapter);
     }
 
-    public void showSearchItems(List<Card> searchItems, OnSelectedCallback<Card> customerCardItemSelectionCallback) {
-        populateSearchList(searchItems, customerCardItemSelectionCallback);
+    @Override
+    public void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback) {
+        List<CustomerCardItem> customerCardItems = getCustomerCardItemList(cards);
+        populateCustomerCardList(customerCardItems, onSelectedCallback);
     }
 
-    protected void populateSearchList(List<Card> items, OnSelectedCallback<Card> onSelectedCallback) {
+    private List<CustomerCardItem> getCustomerCardItemList(List<Card> cards) {
+        List<CustomerCardItem> customerCardItems = new ArrayList<>();
+
+        for (Card card : cards) {
+            CustomerCardItem customerCardItem = new CustomerCardItem();
+            customerCardItem.setCard(card);
+            customerCardItems.add(customerCardItem);
+        }
+
+        if (!isEmpty(mPresenter.getCustomActionMessage())) {
+            CustomerCardItem customerCardItem = new CustomerCardItem();
+            customerCardItem.setActionMessage(mPresenter.getCustomActionMessage());
+            customerCardItems.add(customerCardItem);
+        }
+
+        return customerCardItems;
+    }
+
+    protected void populateCustomerCardList(List<CustomerCardItem> items, OnSelectedCallback<Card> onSelectedCallback) {
         CustomerCardItemAdapter adapter = (CustomerCardItemAdapter) mItemsRecyclerView.getAdapter();
-        List<CustomerCardViewController> customViewControllers = createSearchItemsViewControllers(items, onSelectedCallback);
+        List<CustomerCardViewController> customViewControllers = createItemsViewControllers(items, onSelectedCallback);
         adapter.addItems(customViewControllers);
         adapter.notifyItemInserted();
     }
 
-    private List<CustomerCardViewController> createSearchItemsViewControllers(List<Card> items, final OnSelectedCallback<Card> onSelectedCallback) {
+    private List<CustomerCardViewController> createItemsViewControllers(List<CustomerCardItem> items, final OnSelectedCallback<Card> onSelectedCallback) {
         List<CustomerCardViewController> customViewControllers = new ArrayList<>();
-        for (final Card item : items) {
+        for (final CustomerCardItem item : items) {
             CustomerCardViewController viewController = new CustomerCardOption(this, item, mDecorationPreference);
             viewController.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -213,12 +235,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
                 finish();
             }
         }
-    }
-
-    @Override
-    public void showCards(List<Card> cards, OnSelectedCallback<Card> onSelectedCallback) {
-        //TODO cambiar
-        showSearchItems(cards, onSelectedCallback);
     }
 
     @Override
