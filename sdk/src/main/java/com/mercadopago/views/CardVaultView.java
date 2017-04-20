@@ -14,11 +14,7 @@ import java.util.List;
 
 public interface CardVaultView extends MvpView {
 
-    void onInvalidStart(String message);
-
     void finishWithResult();
-
-    void startErrorView(String message, String errorDetail);
 
     void startErrorView(String message);
 
@@ -29,8 +25,6 @@ public interface CardVaultView extends MvpView {
     void askForInstallments();
 
     void startIssuersActivity();
-
-    void startErrorView(ApiException apiException);
 
     void showProgressLayout();
 

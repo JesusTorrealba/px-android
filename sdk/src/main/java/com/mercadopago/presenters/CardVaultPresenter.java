@@ -68,6 +68,11 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
     protected List<PayerCost> mPayerCostsList;
     protected List<Issuer> mIssuersList;
 
+    public CardVaultPresenter() {
+        super();
+        this.mInstallmentsEnabled = true;
+    }
+
     public void initialize() {
         try {
             validateParameters();
@@ -99,10 +104,6 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
 
     public void setInstallmentsEnabled(Boolean installmentsEnabled) {
         this.mInstallmentsEnabled = installmentsEnabled;
-    }
-
-    public Boolean getInstallmentsEnabled() {
-        return mInstallmentsEnabled;
     }
 
     public void setCard(Card card) {
@@ -295,7 +296,7 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
     }
 
     private void checkStartInstallmentsActivity() {
-        if (installmentsRequired() && mPayerCost == null) {
+        if (isInstallmentsEnabled() && mPayerCost == null) {
             mInstallmentsListShown = true;
             askForInstallments();
         } else {
@@ -322,7 +323,7 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
         }
     }
 
-    public boolean installmentsRequired() {
+    public boolean isInstallmentsEnabled() {
         return mInstallmentsEnabled;
     }
 
@@ -352,6 +353,7 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
         String bin = TextUtils.isEmpty(mCardInfo.getFirstSixDigits()) ? "" : mCardInfo.getFirstSixDigits();
         Long issuerId = mCard.getIssuer() == null ? null : mCard.getIssuer().getId();
         String paymentMethodId = card.getPaymentMethod() == null ? "" : card.getPaymentMethod().getId();
+
         getResourcesProvider().getInstallmentsAsync(bin, issuerId, paymentMethodId, getTotalAmount(), new OnResourcesRetrievedCallback<List<Installment>>() {
             @Override
             public void onSuccess(List<Installment> installments) {
@@ -494,7 +496,7 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
         setCardInfo(new CardInfo(getCard()));
         setPaymentMethod(getCard().getPaymentMethod());
         setIssuer(getCard().getIssuer());
-        if (installmentsRequired()) {
+        if (isInstallmentsEnabled()) {
             getInstallmentsForCardAsync(getCard());
         } else {
             getView().askForSecurityCodeWithoutInstallments();

@@ -151,7 +151,7 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
     }
 
     private void getActivityParameters() {
-        Boolean installmentsEnabled = getIntent().getBooleanExtra("installmentsEnabled", false);
+        Boolean installmentsEnabled = getIntent().getBooleanExtra("installmentsEnabled", true);
         Boolean directDiscountEnabled = getIntent().getBooleanExtra("directDiscountEnabled", true);
         Boolean installmentsReviewEnabled = getIntent().getBooleanExtra("installmentsReviewEnabled", true);
         mPublicKey = getIntent().getStringExtra("merchantPublicKey");
@@ -210,13 +210,6 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
     protected void initialize() {
         MPTracker.getInstance().trackScreen("CARD_VAULT", "2", mCardVaultPresenter.getPublicKey(), BuildConfig.VERSION_NAME, this);
         mCardVaultPresenter.initialize();
-    }
-
-    @Override
-    public void onInvalidStart(String message) {
-        Intent returnIntent = new Intent();
-        setResult(RESULT_CANCELED, returnIntent);
-        finish();
     }
 
     @Override
@@ -305,7 +298,7 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mCardVaultPresenter != null) {
-            outState.putBoolean("installmentsEnabled", mCardVaultPresenter.installmentsRequired());
+            outState.putBoolean("installmentsEnabled", mCardVaultPresenter.isInstallmentsEnabled());
             outState.putBoolean("installmentsReviewEnabled", mCardVaultPresenter.getInstallmentsReviewEnabled());
             outState.putString("merchantPublicKey", mCardVaultPresenter.getPublicKey());
             outState.putString("privateKey", mPrivateKey);
@@ -506,7 +499,7 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
                 .setPaymentPreference(mCardVaultPresenter.getPaymentPreference())
                 .setSite(mCardVaultPresenter.getSite())
                 .setDecorationPreference(mDecorationPreference)
-                .setInstallmentsEnabled(mCardVaultPresenter.getInstallmentsEnabled())
+                .setInstallmentsEnabled(mCardVaultPresenter.isInstallmentsEnabled())
                 .setInstallmentsReviewEnabled(mCardVaultPresenter.getInstallmentsReviewEnabled())
                 .setCardInfo(mCardVaultPresenter.getCardInfo())
                 .setPayerCosts(mCardVaultPresenter.getPayerCostList())
@@ -526,11 +519,6 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
     }
 
     @Override
-    public void startErrorView(ApiException apiException) {
-        ErrorUtil.startErrorActivity(this, new MercadoPagoError(apiException));
-    }
-
-    @Override
     public void finishWithResult() {
         Intent returnIntent = new Intent();
         returnIntent.putExtra("payerCost", JsonUtil.getInstance().toJson(mCardVaultPresenter.getPayerCost()));
@@ -541,11 +529,6 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
         setResult(RESULT_OK, returnIntent);
         finish();
         animateTransitionSlideInSlideOut();
-    }
-
-    @Override
-    public void startErrorView(String message, String errorDetail) {
-        ErrorUtil.startErrorActivity(this, message, errorDetail, false);
     }
 
     @Override
