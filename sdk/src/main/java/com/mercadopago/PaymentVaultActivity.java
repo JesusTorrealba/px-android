@@ -68,12 +68,11 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
     private static final String MERCHANT_GET_CUSTOMER_URI_BUNDLE = "mMerchantGetCustomerUri";
     private static final String MERCHANT_GET_CUSTOMER_ADDITIONAL_INFO = "mMerchantGetCustomerAdditionalInfo";
     private static final String SHOW_BANK_DEALS_BUNDLE = "mShowBankDeals";
+    private static final String PRESENTER_BUNDLE = "mPresenter";
 
     public static final String PAYMENT_VAULT_SCREEN_NAME = "PAYMENT_VAULT";
     public static final int COLUMN_SPACING_DP_VALUE = 20;
     public static final int COLUMNS = 2;
-
-    private static PaymentVaultPresenter savedPresenter;
 
     // Local vars
     protected DecorationPreference mDecorationPreference;
@@ -114,10 +113,7 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
         getActivityParameters();
 
         setMerchantInfo();
-
-        mPaymentVaultPresenter.attachView(this);
-        mPaymentVaultPresenter.attachResourcesProvider(new PaymentVaultProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri,
-                mMerchantGetCustomerAdditionalInfo, mGetMerchantDiscountBaseURL, mGetMerchantDiscountURI, mGetDiscountAdditionalInfo));
+        configurePresenter();
 
         if (isCustomColorSet()) {
             setTheme(R.style.Theme_MercadoPagoTheme_NoActionBar);
@@ -130,6 +126,13 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
         //Avoid automatic selection if activity restored on back pressed from next step
         boolean selectAutomatically = savedInstanceState == null;
         initialize(selectAutomatically);
+    }
+
+    private void configurePresenter() {
+        mPaymentVaultPresenter.attachView(this);
+        mPaymentVaultPresenter.attachResourcesProvider(new PaymentVaultProviderImpl(this, mPublicKey, mPrivateKey, mMerchantBaseUrl, mMerchantGetCustomerUri,
+                mMerchantGetCustomerAdditionalInfo, mGetMerchantDiscountBaseURL, mGetMerchantDiscountURI, mGetDiscountAdditionalInfo));
+
     }
 
     protected void setMerchantInfo() {
@@ -616,23 +619,23 @@ public class PaymentVaultActivity extends MercadoPagoBaseActivity implements Pay
         outState.putString(MERCHANT_BASE_URL_BUNDLE, mMerchantBaseUrl);
         outState.putString(MERCHANT_GET_CUSTOMER_ADDITIONAL_INFO, JsonUtil.getInstance().toJson(mMerchantGetCustomerAdditionalInfo));
         outState.putBoolean(SHOW_BANK_DEALS_BUNDLE, mShowBankDeals);
-        mPaymentVaultPresenter.detachView();
-        PaymentVaultActivity.savedPresenter = mPaymentVaultPresenter;
+        outState.putString(PRESENTER_BUNDLE, JsonUtil.getInstance().toJson(mPaymentVaultPresenter));
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        mPaymentVaultPresenter.attachView(this);
-        mPaymentVaultPresenter = PaymentVaultActivity.savedPresenter;
 
         mPublicKey = savedInstanceState.getString(PUBLIC_KEY_BUNDLE);
         String merchantGetCustomerAdditionalInfo = savedInstanceState.getString(MERCHANT_GET_CUSTOMER_ADDITIONAL_INFO);
         Type type = new TypeToken<Map<String, String>>() {
         }.getType();
+
         mMerchantGetCustomerAdditionalInfo = new Gson().fromJson(merchantGetCustomerAdditionalInfo, type);
         mMerchantGetCustomerUri = savedInstanceState.getString(MERCHANT_GET_CUSTOMER_URI_BUNDLE);
         mMerchantBaseUrl = savedInstanceState.getString(MERCHANT_BASE_URL_BUNDLE);
         mShowBankDeals = savedInstanceState.getBoolean(SHOW_BANK_DEALS_BUNDLE, true);
+        mPaymentVaultPresenter = JsonUtil.getInstance().fromJson(savedInstanceState.getString(PRESENTER_BUNDLE), PaymentVaultPresenter.class);
+        configurePresenter();
 
         super.onRestoreInstanceState(savedInstanceState);
     }

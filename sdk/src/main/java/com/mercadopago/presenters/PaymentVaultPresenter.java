@@ -191,7 +191,7 @@ public class PaymentVaultPresenter extends MvpPresenter<PaymentVaultView, Paymen
 
     private void getPaymentMethodSearchAsync() {
 
-        if(isViewAttached()) {
+        if (isViewAttached()) {
             getView().showProgress();
             Payer payer = new Payer();
             payer.setAccessToken(mPayerAccessToken);
@@ -479,7 +479,7 @@ public class PaymentVaultPresenter extends MvpPresenter<PaymentVaultView, Paymen
     }
 
     public void recoverFromFailure() {
-        if(failureRecovery != null) {
+        if (failureRecovery != null) {
             failureRecovery.recover();
         }
     }
