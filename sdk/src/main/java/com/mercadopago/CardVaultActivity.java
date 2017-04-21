@@ -185,6 +185,11 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
         } catch (Exception ex) {
             paymentMethods = null;
         }
+
+        if (paymentPreference == null) {
+            paymentPreference = new PaymentPreference();
+        }
+
         mShowBankDeals = getIntent().getBooleanExtra("showBankDeals", true);
 
         mCardVaultPresenter.setPublicKey(mPublicKey);
@@ -529,11 +534,6 @@ public class CardVaultActivity extends AppCompatActivity implements CardVaultVie
         setResult(RESULT_OK, returnIntent);
         finish();
         animateTransitionSlideInSlideOut();
-    }
-
-    @Override
-    public void startErrorView(String message) {
-        ErrorUtil.startErrorActivity(this, message, false);
     }
 
     @Override

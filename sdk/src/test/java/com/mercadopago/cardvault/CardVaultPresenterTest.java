@@ -3,10 +3,14 @@ package com.mercadopago.cardvault;
 import com.mercadopago.callbacks.FailureRecovery;
 import com.mercadopago.constants.Sites;
 import com.mercadopago.exceptions.MercadoPagoError;
+import com.mercadopago.mocks.Cards;
+import com.mercadopago.mocks.Installments;
 import com.mercadopago.model.ApiException;
 import com.mercadopago.model.Installment;
+import com.mercadopago.model.PayerCost;
 import com.mercadopago.model.Site;
 import com.mercadopago.mvp.OnResourcesRetrievedCallback;
+import com.mercadopago.preferences.PaymentPreference;
 import com.mercadopago.presenters.CardVaultPresenter;
 import com.mercadopago.providers.CardVaultProvider;
 import com.mercadopago.views.CardVaultView;
@@ -14,10 +18,13 @@ import com.mercadopago.views.CardVaultView;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
@@ -46,10 +53,6 @@ public class CardVaultPresenterTest {
         MockedView mockedView = new MockedView();
         MockedProvider provider = new MockedProvider();
 
-//        List<Installment> installmentsList = com.mercadopago.utils.PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-//
-//        provider.setResponse(installmentsList);
-
         CardVaultPresenter presenter = new CardVaultPresenter();
         presenter.attachView(mockedView);
         presenter.attachResourcesProvider(provider);
@@ -65,10 +68,6 @@ public class CardVaultPresenterTest {
     public void ifInstallmentsEnabledAndSiteNotSetThenShowMissingSiteError() {
         MockedView mockedView = new MockedView();
         MockedProvider provider = new MockedProvider();
-
-//        List<Installment> installmentsList = com.mercadopago.utils.PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-//
-//        provider.setResponse(installmentsList);
 
         CardVaultPresenter presenter = new CardVaultPresenter();
         presenter.attachView(mockedView);
@@ -87,10 +86,6 @@ public class CardVaultPresenterTest {
         MockedView mockedView = new MockedView();
         MockedProvider provider = new MockedProvider();
 
-//        List<Installment> installmentsList = com.mercadopago.utils.PaymentMethodSearchs.getPaymentMethodWithoutCustomOptionsMLA();
-//
-//        provider.setResponse(installmentsList);
-
         CardVaultPresenter presenter = new CardVaultPresenter();
         presenter.attachView(mockedView);
         presenter.attachResourcesProvider(provider);
@@ -103,6 +98,274 @@ public class CardVaultPresenterTest {
         assertEquals(MockedProvider.MISSING_AMOUNT, mockedView.errorShown.getMessage());
     }
 
+    @Test
+    public void ifInstallmentsEnabledAndSavedCardSetThenGetInstallmentsForCard() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsList();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+
+        presenter.initialize();
+
+        List<PayerCost> expectedPayerCosts = presenter.getPayerCostList();
+        List<PayerCost> mockedPayerCosts = installmentsList.get(0).getPayerCosts();
+
+        assertEquals(expectedPayerCosts.size(), mockedPayerCosts.size());
+        assertTrue(expectedPayerCosts.size() > 1);
+        assertNull(presenter.getPayerCost());
+    }
+
+    @Test
+    public void ifInstallmentsNotEnabledAndSavedCardSetThenDontGetInstallments() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsList();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+        presenter.setInstallmentsEnabled(false);
+
+        presenter.initialize();
+
+        assertNull(presenter.getPayerCostList());
+    }
+
+    @Test
+    public void ifInstallmentsForCardHasOnePayerCostThenSelectIt() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsListWithUniquePayerCost();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+
+        presenter.initialize();
+
+        List<PayerCost> expectedPayerCosts = presenter.getPayerCostList();
+        assertTrue(expectedPayerCosts.size() == 1);
+        assertNotNull(presenter.getPayerCost());
+    }
+
+    @Test
+    public void ifInstallmentsForCardIsEmptyThenShowErrorMessage() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = new ArrayList<>();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+
+        presenter.initialize();
+
+        assertEquals(MockedProvider.MISSING_INSTALLMENTS, mockedView.errorShown.getMessage());
+    }
+
+    @Test
+    public void ifInstallmentsForCardHasMultiplePayerCostsThenShowErrorMessage() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsListWithMultiplePayerCost();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+
+        presenter.initialize();
+
+        assertEquals(MockedProvider.MULTIPLE_INSTALLMENTS, mockedView.errorShown.getMessage());
+    }
+
+    @Test
+    public void ifInstallmentsForCardFailsThenShowErrorMessage() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        ApiException apiException = Installments.getDoNotFindInstallmentsException();
+        MercadoPagoError mpException = new MercadoPagoError(apiException);
+        provider.setResponse(mpException);
+
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+
+        presenter.initialize();
+
+        assertTrue(provider.failedResponse.getApiException().getError().equals(provider.INSTALLMENTS_NOT_FOUND_ERROR));
+
+    }
+
+    @Test
+    public void ifInstallmentsEnabledAndSavedCardSetThenStartInstallmentsFlow() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsList();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+
+        presenter.initialize();
+
+        assertTrue(mockedView.installmentsFlowStarted);
+    }
+
+    @Test
+    public void ifInstallmentsNotEnabledAndSavedCardSetThenStartSecurityCodeFlow() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsList();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+        presenter.setInstallmentsEnabled(false);
+
+        presenter.initialize();
+
+        assertFalse(mockedView.installmentsFlowStarted);
+        assertTrue(mockedView.securityCodeFlowStarted);
+    }
+
+    @Test
+    public void ifPaymentPreferenceHasDefaultInstallmentsForSavedCardThenSelectIt() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsList();
+        provider.setResponse(installmentsList);
+
+        int mockedDefaultInstallment = 3;
+
+        PaymentPreference paymentPreference = new PaymentPreference();
+        paymentPreference.setDefaultInstallments(mockedDefaultInstallment);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+        presenter.setPaymentPreference(paymentPreference);
+
+        presenter.initialize();
+
+        assertNotNull(presenter.getPayerCost());
+        assertTrue(presenter.getPayerCost().getInstallments() == mockedDefaultInstallment);
+    }
+
+    @Test
+    public void ifPaymentPreferenceHasDefaultInstallmentsForSavedCardThenStartSecurityCodeFlow() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsList();
+        provider.setResponse(installmentsList);
+
+        int mockedDefaultInstallment = 3;
+
+        PaymentPreference paymentPreference = new PaymentPreference();
+        paymentPreference.setDefaultInstallments(mockedDefaultInstallment);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+        presenter.setPaymentPreference(paymentPreference);
+
+        presenter.initialize();
+
+        assertTrue(mockedView.securityCodeFlowStarted);
+    }
+
+    @Test
+    public void ifInstallmentsForCardHasNoPayerCostsThenShowErrorMessage() {
+        MockedView mockedView = new MockedView();
+        MockedProvider provider = new MockedProvider();
+
+        List<Installment> installmentsList = Installments.getInstallmentsListWithoutPayerCosts();
+        provider.setResponse(installmentsList);
+
+        CardVaultPresenter presenter = new CardVaultPresenter();
+        presenter.attachView(mockedView);
+        presenter.attachResourcesProvider(provider);
+
+        presenter.setPublicKey("mockedPublicKey");
+        presenter.setSite(Sites.ARGENTINA);
+        presenter.setAmount(new BigDecimal(100));
+        presenter.setCard(Cards.getCard());
+
+        presenter.initialize();
+
+        assertEquals(MockedProvider.MISSING_PAYER_COSTS, mockedView.errorShown.getMessage());
+    }
+
     private class MockedProvider implements CardVaultProvider {
 
         private static final String MULTIPLE_INSTALLMENTS = "multiple installments";
@@ -111,6 +374,7 @@ public class CardVaultPresenterTest {
         private static final String MISSING_AMOUNT = "missing amount";
         private static final String MISSING_PUBLIC_KEY = "missing public key";
         private static final String MISSING_SITE = "missing site";
+        private static final String INSTALLMENTS_NOT_FOUND_ERROR = "installments not found error";
 
         private boolean shouldFail;
         private MercadoPagoError failedResponse;
@@ -120,6 +384,11 @@ public class CardVaultPresenterTest {
         public void setResponse(MercadoPagoError exception) {
             shouldFail = true;
             failedResponse = exception;
+        }
+
+        public void setResponse(List<Installment> installmentList) {
+            shouldFail = false;
+            successfulResponse = installmentList;
         }
 
         @Override
@@ -213,11 +482,6 @@ public class CardVaultPresenterTest {
 
         @Override
         public void showApiExceptionError(ApiException exception) {
-
-        }
-
-        @Override
-        public void startErrorView(String message) {
 
         }
 

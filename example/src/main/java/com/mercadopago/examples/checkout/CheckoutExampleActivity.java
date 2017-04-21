@@ -57,27 +57,35 @@ public class CheckoutExampleActivity extends AppCompatActivity {
     }
 
     private void startMercadoPagoCheckout() {
-//        Map<String, String> additionalInfo = new HashMap<>();
-//        additionalInfo.put("merchant_access_token", ExamplesUtils.DUMMY_MERCHANT_ACCESS_TOKEN);
-//        ServicePreference servicePreference = new ServicePreference.Builder()
-//                .setGetCustomerURL(ExamplesUtils.DUMMY_MERCHANT_BASE_URL, ExamplesUtils.DUMMY_MERCHANT_GET_CUSTOMER_URI, additionalInfo)
-//                .build();
+        Map<String, String> additionalInfo = new HashMap<>();
+        additionalInfo.put("merchant_access_token", ExamplesUtils.DUMMY_MERCHANT_ACCESS_TOKEN);
+        ServicePreference servicePreference = new ServicePreference.Builder()
+                .setGetCustomerURL(ExamplesUtils.DUMMY_MERCHANT_BASE_URL, ExamplesUtils.DUMMY_MERCHANT_GET_CUSTOMER_URI, additionalInfo)
+                .build();
+
+        CheckoutPreference checkoutPreference = new CheckoutPreference.Builder()
+                .addItem(new Item("sarasa", new BigDecimal(60)))
+                .enableAccountMoney()
+                .setPayerAccessToken("APP_USR-6270211732691649-021716-4aec8ed3fcb7b21be635eb54646c871e__LD_LB__-159840830")
+                .setSite(Sites.ARGENTINA)
+                .build();
 
         FlowPreference flowPreference = new FlowPreference.Builder()
                 .disableReviewAndConfirmScreen()
-                .disableDiscount()
-                .disableBankDeals()
-                .disableInstallmentsReviewScreen()
+//                .disableDiscount()
+//                .disableBankDeals()
+//                .disableInstallmentsReviewScreen()
                 .build();
 
         new MercadoPagoCheckout.Builder()
                 .setActivity(this)
                 .setPublicKey("TEST-e4bdd1cf-bcb2-43f7-b565-ed4c9ea25be7")
-                .setCheckoutPreference(getCheckoutPreference())
+//                .setCheckoutPreference(getCheckoutPreference())
 //                .setServicePreference(servicePreference)
-//                .setFlowPreference(flowPreference)
-                .startForPayment();
-//                .startForPaymentData();
+                .setCheckoutPreference(checkoutPreference)
+                .setFlowPreference(flowPreference)
+//                .startForPayment();
+                .startForPaymentData();
     }
 
     private void startRyC(PaymentData paymentData) {

@@ -71,6 +71,8 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
     public CardVaultPresenter() {
         super();
         this.mInstallmentsEnabled = true;
+        this.mDiscountEnabled = true;
+        this.mPaymentPreference = new PaymentPreference();
     }
 
     public void initialize() {
@@ -386,7 +388,7 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
             errorMessage = getResourcesProvider().getMultipleInstallmentsForIssuerErrorMessage();
         }
         if (errorMessage != null && isViewAttached()) {
-            getView().startErrorView(errorMessage);
+            getView().showError(new MercadoPagoError(errorMessage, false));
         }
     }
 
@@ -409,7 +411,7 @@ public class CardVaultPresenter extends MvpPresenter<CardVaultView, CardVaultPro
             mPayerCost = defaultPayerCost;
             getView().askForSecurityCodeWithoutInstallments();
         } else if (mPayerCostsList.isEmpty()) {
-            getView().startErrorView(getResourcesProvider().getMissingPayerCostsErrorMessage());
+            getView().showError(new MercadoPagoError(getResourcesProvider().getMissingPayerCostsErrorMessage(), false));
         } else if (mPayerCostsList.size() == 1) {
             mPayerCost = payerCosts.get(0);
             getView().askForSecurityCodeWithoutInstallments();

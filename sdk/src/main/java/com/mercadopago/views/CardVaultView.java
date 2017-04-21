@@ -16,8 +16,6 @@ public interface CardVaultView extends MvpView {
 
     void finishWithResult();
 
-    void startErrorView(String message);
-
     void showApiExceptionError(ApiException exception);
 
     void showError(MercadoPagoError mercadoPagoError);
