@@ -2,6 +2,7 @@ package com.mercadopago.presenters;
 
 import android.content.Context;
 
+import com.mercadopago.adapters.CustomerCardItemAdapter;
 import com.mercadopago.callbacks.FailureRecovery;
 import com.mercadopago.callbacks.OnSelectedCallback;
 import com.mercadopago.exceptions.MercadoPagoError;
@@ -10,7 +11,6 @@ import com.mercadopago.model.Customer;
 import com.mercadopago.mvp.MvpPresenter;
 import com.mercadopago.mvp.OnResourcesRetrievedCallback;
 import com.mercadopago.providers.CustomerCardsProvider;
-import com.mercadopago.uicontrollers.savedcards.CustomerCardItem;
 import com.mercadopago.util.MercadoPagoUtil;
 import com.mercadopago.views.CustomerCardsView;
 
@@ -27,7 +27,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
     private Integer mSelectionImageDrawableResId;
     private String mCustomTitle;
     private String mSelectionConfirmPromptText;
-    private String mCustomActionMessage;
+    private String mActionMessage;
     private FailureRecovery mFailureRecovery;
 
     private List<Card> mCards;
@@ -36,7 +36,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         if (mCards == null) {
             getCustomerAsync();
         } else {
-            getView().showCards(mCards, getOnSelectedCallback());
+            getView().showCards(mCards, mActionMessage, getOnSelectedCallback());
         }
     }
 
@@ -47,9 +47,8 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
             @Override
             public void onSuccess(Customer customer) {
                 mCards = customer.getCards();
-
                 getView().hideProgress();
-                getView().showCards(mCards, getOnSelectedCallback());
+                getView().showCards(mCards, mActionMessage, getOnSelectedCallback());
             }
 
             @Override
@@ -67,10 +66,10 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         });
     }
 
-    public OnSelectedCallback<CustomerCardItem> getOnSelectedCallback() {
-        return new OnSelectedCallback<CustomerCardItem>() {
+    private OnSelectedCallback<CustomerCardItemAdapter.CustomerCardItem> getOnSelectedCallback() {
+        return new OnSelectedCallback<CustomerCardItemAdapter.CustomerCardItem>() {
             @Override
-            public void onSelected(CustomerCardItem customerCardItem) {
+            public void onSelected(CustomerCardItemAdapter.CustomerCardItem customerCardItem) {
                 if (customerCardItem != null) {
                     resolveCustomerCardItemResponse(customerCardItem);
                 }
@@ -78,7 +77,7 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
         };
     }
 
-    private void resolveCustomerCardItemResponse(final CustomerCardItem customerCardItem) {
+    private void resolveCustomerCardItemResponse(final CustomerCardItemAdapter.CustomerCardItem customerCardItem) {
         if (customerCardItem.hasActionMessage()) {
             //TODO tomar acción
         } else {
@@ -135,11 +134,11 @@ public class CustomerCardsPresenter extends MvpPresenter<CustomerCardsView, Cust
     }
 
     public String getCustomActionMessage() {
-        return mCustomActionMessage;
+        return mActionMessage;
     }
 
     public void setCustomActionMessage(String customActionMessage) {
-        this.mCustomActionMessage = customActionMessage;
+        this.mActionMessage = customActionMessage;
     }
 
     public void setFailureRecovery(FailureRecovery failureRecovery) {

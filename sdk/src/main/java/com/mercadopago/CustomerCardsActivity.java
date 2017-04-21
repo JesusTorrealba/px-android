@@ -25,9 +25,6 @@ import com.mercadopago.preferences.DecorationPreference;
 import com.mercadopago.presenters.CustomerCardsPresenter;
 import com.mercadopago.providers.CustomerCardsProviderImpl;
 import com.mercadopago.uicontrollers.GridSpacingItemDecoration;
-import com.mercadopago.uicontrollers.savedcards.CustomerCardItem;
-import com.mercadopago.uicontrollers.savedcards.CustomerCardOption;
-import com.mercadopago.uicontrollers.savedcards.CustomerCardViewController;
 import com.mercadopago.util.ApiUtil;
 import com.mercadopago.util.ErrorUtil;
 import com.mercadopago.util.JsonUtil;
@@ -115,8 +112,6 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
 
     protected void initializeControls() {
         initializeToolbar();
-        initializePaymentOptionsRecyclerView();
-
         mSavedCardsContainer = (ViewGroup) findViewById(R.id.mpsdkRegularLayout);
     }
 
@@ -145,60 +140,57 @@ public class CustomerCardsActivity extends MercadoPagoBaseActivity implements Cu
         }
     }
 
-    protected void initializePaymentOptionsRecyclerView() {
+    @Override
+    public void showCards(List<Card> cards, String actionMessage, OnSelectedCallback<CustomerCardItemAdapter.CustomerCardItem> onSelectedCallback) {
+        initializePaymentOptionsRecyclerView(cards, actionMessage);
+    }
+
+    protected void initializePaymentOptionsRecyclerView(List<Card> cards, String actionMessage) {
         int columns = COLUMNS;
         mItemsRecyclerView = (RecyclerView) findViewById(R.id.mpsdkCardsList);
         mItemsRecyclerView.setLayoutManager(new GridLayoutManager(this, columns));
         mItemsRecyclerView.addItemDecoration(new GridSpacingItemDecoration(columns, ScaleUtil.getPxFromDp(COLUMN_SPACING_DP_VALUE, this), true));
-        CustomerCardItemAdapter groupsAdapter = new CustomerCardItemAdapter();
+        CustomerCardItemAdapter groupsAdapter = new CustomerCardItemAdapter(this, cards, actionMessage);
+
+        populateCustomerCardList(groupsAdapter);
+    }
+
+//    private List<CustomerCardItemAdapter.CustomerCardItem> getCustomerCardItemList(List<Card> cards) {
+//        List<CustomerCardItemAdapter.CustomerCardItem> customerCardItems = new ArrayList<>();
+//
+//        for (Card card : cards) {
+//            CustomerCardItemAdapter.CustomerCardItem customerCardItem = new CustomerCardItemAdapter.CustomerCardItem();
+//            customerCardItem.setCard(card);
+//            customerCardItems.add(customerCardItem);
+//        }
+//
+//        if (!isEmpty(mPresenter.getCustomActionMessage())) {
+//            CustomerCardItemAdapter.CustomerCardItem customerCardItem = new CustomerCardItemAdapter.CustomerCardItem();
+//            customerCardItem.setActionMessage(mPresenter.getCustomActionMessage());
+//            customerCardItems.add(customerCardItem);
+//        }
+//
+//        return customerCardItems;
+//    }
+
+    protected void populateCustomerCardList(CustomerCardItemAdapter groupsAdapter) {
         mItemsRecyclerView.setAdapter(groupsAdapter);
     }
 
-    @Override
-    public void showCards(List<Card> cards, OnSelectedCallback<CustomerCardItem> onSelectedCallback) {
-        List<CustomerCardItem> customerCardItems = getCustomerCardItemList(cards);
-        populateCustomerCardList(customerCardItems, onSelectedCallback);
-    }
-
-    private List<CustomerCardItem> getCustomerCardItemList(List<Card> cards) {
-        List<CustomerCardItem> customerCardItems = new ArrayList<>();
-
-        for (Card card : cards) {
-            CustomerCardItem customerCardItem = new CustomerCardItem();
-            customerCardItem.setCard(card);
-            customerCardItems.add(customerCardItem);
-        }
-
-        if (!isEmpty(mPresenter.getCustomActionMessage())) {
-            CustomerCardItem customerCardItem = new CustomerCardItem();
-            customerCardItem.setActionMessage(mPresenter.getCustomActionMessage());
-            customerCardItems.add(customerCardItem);
-        }
-
-        return customerCardItems;
-    }
-
-    protected void populateCustomerCardList(List<CustomerCardItem> items, OnSelectedCallback<CustomerCardItem> onSelectedCallback) {
-        CustomerCardItemAdapter adapter = (CustomerCardItemAdapter) mItemsRecyclerView.getAdapter();
-        List<CustomerCardViewController> customViewControllers = createItemsViewControllers(items, onSelectedCallback);
-        adapter.addItems(customViewControllers);
-        adapter.notifyItemInserted();
-    }
-
-    private List<CustomerCardViewController> createItemsViewControllers(List<CustomerCardItem> items, final OnSelectedCallback<CustomerCardItem> onSelectedCallback) {
-        List<CustomerCardViewController> customViewControllers = new ArrayList<>();
-        for (final CustomerCardItem item : items) {
-            CustomerCardViewController viewController = new CustomerCardOption(this, item, mDecorationPreference);
-            viewController.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onSelectedCallback.onSelected(item);
-                }
-            });
-            customViewControllers.add(viewController);
-        }
-        return customViewControllers;
-    }
+//    private List<CustomerCardViewController> createItemsViewControllers(List<CustomerCardItemAdapter.CustomerCardItem> items, final OnSelectedCallback<CustomerCardItem> onSelectedCallback) {
+//        List<CustomerCardViewController> customViewControllers = new ArrayList<>();
+//        for (final CustomerCardItem item : items) {
+//            CustomerCardViewController viewController = new CustomerCardOption(this, item, mDecorationPreference);
+//            viewController.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    onSelectedCallback.onSelected(item);
+//                }
+//            });
+//            customViewControllers.add(viewController);
+//        }
+//        return customViewControllers;
+//    }
 
     private boolean isCustomColorSet() {
         return mDecorationPreference != null && mDecorationPreference.hasColors();

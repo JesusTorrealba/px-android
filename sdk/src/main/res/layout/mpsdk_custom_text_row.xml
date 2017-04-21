@@ -16,7 +16,7 @@
             android:background="@drawable/mpsdk_light_grey_circle">
             <com.mercadopago.customviews.MPTextView
                 android:adjustViewBounds= "true"
-                android:id="@+id/mpsdkText"
+                android:id="@+id/mpsdkDescription"
                 android:padding="16dp"
                 android:maxWidth="80dp"
                 android:layout_width="wrap_content"

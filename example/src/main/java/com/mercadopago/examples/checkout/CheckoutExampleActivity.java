@@ -8,14 +8,18 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.mercadopago.callbacks.Callback;
 import com.mercadopago.constants.PaymentTypes;
 import com.mercadopago.constants.Sites;
 import com.mercadopago.core.MercadoPagoCheckout;
+import com.mercadopago.core.MerchantServer;
 import com.mercadopago.examples.R;
 import com.mercadopago.examples.reviewables.CellphoneReview;
 import com.mercadopago.examples.reviewables.CongratsReview;
 import com.mercadopago.examples.utils.ExamplesUtils;
 import com.mercadopago.exceptions.MercadoPagoError;
+import com.mercadopago.model.ApiException;
+import com.mercadopago.model.Discount;
 import com.mercadopago.model.Item;
 import com.mercadopago.model.PaymentData;
 import com.mercadopago.model.PaymentResult;
@@ -39,6 +43,7 @@ public class CheckoutExampleActivity extends AppCompatActivity {
     private View mRegularLayout;
     private boolean mAlreadyStartedRyC;
     private String mPublicKey;
+    private CheckoutPreference mCheckoutPreference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,17 +63,44 @@ public class CheckoutExampleActivity extends AppCompatActivity {
 
     private void startMercadoPagoCheckout() {
 
+//        showProgressLayout();
+        Map<String, Object> map = new HashMap<>();
+        map.put("item_id", "1");
+        map.put("amount", new BigDecimal(300));
+
+        MerchantServer.createPreference(this, "https://private-afe56-mercadopagoexamples.apiary-mock.com/",
+                "merchantUri/create_preference", map, new Callback<CheckoutPreference>() {
+                    @Override
+                    public void success(CheckoutPreference checkoutPreference) {
+                        mCheckoutPreference = checkoutPreference;
+                        continueCheckout();
+                    }
+
+                    @Override
+                    public void failure(ApiException error) {
+                        showRegularLayout();
+                        Toast.makeText(mActivity, getString(R.string.preference_creation_failed), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void continueCheckout() {
+//        Discount discount = new Discount();
+//        discount.setId(77L);
+//        discount.setCurrencyId("ARS");
+//        discount.setCouponAmount(new BigDecimal(50));
+
         FlowPreference flowPreference = new FlowPreference.Builder()
-                .disableReviewAndConfirmScreen()
-                .disableDiscount()
-                .disableBankDeals()
+//                .disableReviewAndConfirmScreen()
+//                .disableDiscount()
+//                .disableBankDeals()
                 .disableInstallmentsReviewScreen()
                 .build();
 
         new MercadoPagoCheckout.Builder()
                 .setActivity(this)
                 .setPublicKey(mPublicKey)
-                .setCheckoutPreference(getCheckoutPreference())
+                .setCheckoutPreference(mCheckoutPreference)
                 .setFlowPreference(flowPreference)
 //                .startForPayment();
                 .startForPaymentData();
